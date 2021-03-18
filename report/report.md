@@ -111,11 +111,11 @@ Riscriviamo ora quindi i requisiti ristrutturandoli in gruppi di frasi omogenee,
 
 | Frasi relative alle ***corse*** |
 |:-----------------------:|
-| Si vuole tener traccia dell'autobus e del autista che ha eseguito una corsa, corrispondente cioè ad una istanza di linea di trasporto urbana effettuata ad una certa ora e giorno |
+| Si vuole tener traccia dell'autobus e dell'autista che ha eseguito una corsa, corrispondente cioè ad una istanza di linea di trasporto urbana effettuata ad una certa ora e giorno |
 
 | Frasi relative ai ***clienti*** |
 |:-----------------------:|
-| Il cliente è identificato dal codice fiscale ed è caratterizzato da nome, cognome, data di nascita e luogo di residenza e da un recapito telefonico (in caso di smarrimento dell'abbonamento). Si è interessati alla memorizzazione dei clienti posseditori di tessera. Si vuole, in particolare, tener traccia dei loro spostamenti, cioè si vogliono conoscere le corse di cui ha usufruito, e del numero di corse utilizzate mensilmente. |
+| Il cliente è identificato dal codice fiscale ed è caratterizzato da nome, cognome, data di nascita e luogo di residenza e da un recapito telefonico (in caso di smarrimento dell'abbonamento). Si è interessati alla memorizzazione dei clienti possessori di tessera. Si vuole, in particolare, tener traccia dei loro spostamenti, cioè si vogliono conoscere le corse di cui ha usufruito, e del numero di corse utilizzate mensilmente. |
 
 | Frasi relative alle ***tessere*** |
 |:-----------------------:|
@@ -180,15 +180,15 @@ Si vuole realizzare una base di dati per la gestione giornaliera di un sistema d
 
 - Il sistema di trasporto urbano sia organizzato in un certo insieme di \entita{linee di trasporto urbano}. Ogni linea di trasporto urbana sia identificata univocamente da un \attributo{numero} e sia caratterizzata da un certo \attributo{numero di fermate}. Si tenga traccia anche dell’\relazione{ordine} delle \entita{fermate} di una data linea di trasporto urbana. Ogni linea di trasporto urbana \relazione{è servita}, nello stesso giorno, da uno o più \entita{autobus}.
 
-- Ogni fermata sia identificata univocamente da un \attributo{nome}. Ad ogni fermata sia, inoltre, associato un \attributo{indirizzo}. Una fermata possa essere \relazione{raggiunta} da più linee di trasporto urbane.
+- Ogni fermata sia identificata univocamente da un \attributo{nome}. Ad ogni fermata sia, inoltre, associato un \attributo{indirizzo}. Una fermata possa essere raggiunta da più linee di trasporto urbane.
 
 - Ogni autobus è identificato univocamente dal \attributo{numero di immatricolazione (targa)} ed è caratterizzato da un \attributo{numero di posti (in piedi e a sedere)}. Un autobus può \relazione{essere guidato da} \entita{autisti} diversi.
 
 - L’autista di un autobus è identificabile univocamente tramite il suo \attributo{codice fiscale} o per mezzo del \attributo{numero di patente} ed è caratterizzato da \attributo{nome}, \attributo{cognome}, \attributo{data di nascita} e \attributo{luogo di residenza} e da zero o più \attributo{numeri di recapito telefonico}.
 
-- Si vuole tener traccia dell’autobus e del autista che \relazione{ha eseguito} una corsa, corrispondente cioè ad una istanza di linea di trasporto urbana effettuata ad una certa \relattr{ora} e \relattr{giorno}.
+- Si vuole tener traccia dell’autobus e dell'autista che \relazione{ha eseguito} una corsa, corrispondente cioè ad una istanza di linea di trasporto urbana effettuata ad una certa \relattr{ora} e \relattr{giorno}.
 
-- Il \entita{cliente} è identificato dal \attributo{codice fiscale} ed è caratterizzato da \attributo{nome}, \attributo{cognome}, \attributo{data di nascita} e \attributo{luogo di residenza} e da un \attributo{recapito telefonico} (in caso di smarrimento dell'abbonamento). Si è interessati alla memorizzazione dei clienti posseditori di \entita{tessera}. Si vuole, in particolare, tener traccia dei loro spostamenti, cioè si vogliono conoscere le corse di cui \relazione{ha usufruito}, e del \attributo{numero di corse utilizzate mensilmente}. 
+- Il \entita{cliente} è identificato dal \attributo{codice fiscale} ed è caratterizzato da \attributo{nome}, \attributo{cognome}, \attributo{data di nascita} e \attributo{luogo di residenza} e da un \attributo{recapito telefonico} (in caso di smarrimento dell'abbonamento). Si è interessati alla memorizzazione dei clienti possessori di \entita{tessera}. Si vuole, in particolare, tener traccia dei loro spostamenti, cioè si vogliono conoscere le corse di cui \relazione{ha usufruito}, e del \attributo{numero di corse utilizzate mensilmente}. 
 
 - Ogni tessera è \relazione{intestata a} uno e un solo cliente.
 
