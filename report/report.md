@@ -1,8 +1,6 @@
 ---
 title: Relazione Basi di Dati 2020-2021
-author: 
-  - Alessandro Zanatta, Christian Abbondo,
-  - Samuele Anzolin e Fabiana Rapicavoli
+author: Alessandro Zanatta, Christian Abbondo, Samuele Anzolin e Fabiana Rapicavoli
 date:
   - 10-09-2020
 header-includes:
@@ -53,15 +51,11 @@ Il **dominio di interesse** della base di dati è definito nella prima frase ed 
 \textit{Linea di trasporto urbana} &
   Successione di fermate dell'autobus &
   Linea di trasporto, Linea &
-  Fermata, Passaggio, Autobus, Corsa \\ \hline
+  Fermata, Autobus, Corsa \\ \hline
 \textit{Fermata} &
   Punto di salita e/o discesa di un determinato luogo &
    &
-  Linea di trasporto urbana, Passaggio \\ \hline
-\textit{Passaggio} &
-  Transito di un autobus appartenente ad una data linea in una certa fermata &
-   &
-  Linea di trasporto urbana, Fermata \\ \hline
+  Linea di trasporto urbana \\ \hline
 \textit{Autobus} &
   Mezzo utilizzato per il trasporto dei clienti &
    &
