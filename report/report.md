@@ -26,7 +26,6 @@ Si vuole realizzare una base di dati per la gestione giornaliera di un sistema d
 
 - Il servizio sia organizzato in un certo insieme di linee di trasporto urbano. Ogni linea sia identificata univocamente da un numero (ad esempio, linea di trasporto urbano numero 1) e sia caratterizzata da un certo numero di fermate. Si tenga traccia anche dell’ordine della fermate di una data linea.
 - Ogni fermata sia identificata univocamente da un nome. Ad ogni fermata sia, inoltre, associato un indirizzo. Una fermata possa essere raggiunta da più linee di trasporto.
-- Si tenga traccia anche dei passaggi di una determinata corsa in una determinata fermata. Si assuma che una corsa possa effettuare più passaggi in una data fermata nel corso della giornata, ovviamente in orari diversi. Si escluda, invece, la possibilità che autobus appartenenti a linee diverse possano passare nella stessa fermata esattamente nello stesso orario.
 - Ogni linea è servita, nello stesso giorno, da uno o più autobus. Ogni autobus è identificato univocamente dal numero di immatricolazione ed è caratterizzato da un numero di posti (in piedi e a sedere). Un autobus può essere guidato da guidatori diversi. Si vuol tener traccia dell'autobus e del guidatore che ha eseguito una corsa (su una certa linea, una corsa corrisponde ad un'istanza di linea effettuata ad una certa ora e giorno).
 - L'autista di un autobus è identificabile univocamente tramite il suo codice fiscale o per mezzo del numero di patente ed è caratterizzato da nome, cognome, data di nascita e luogo di residenza e da zero o più numeri di recapito telefonico.
 - I clienti che usufruiscono del servizio di trasporto possono viaggiare tramite biglietti giornalieri o tramite abbonamento. Si è interessati unicamente alla memorizzazione degli utenti tesserati. Si vuole, in particolare, tener traccia dei loro spostamenti, cioè si vogliono conoscere le corse di cui ha usufruito e il numero di corse utilizzate mensilmente.
@@ -108,10 +107,6 @@ Riscriviamo ora quindi i requisiti ristrutturandoli in gruppi di frasi omogenee,
 
 \newpage
 
-| Frasi relative ai ***passaggi*** |
-|:-----------------------:|
-| Si tenga traccia anche dei passaggi degli autobus appartenenti ad una determinata corsa in una specifica fermata. Si assuma che una corsa possa effettuare più passaggi in una data fermata nel corso della giornata, ovviamente in orari diversi. Si escluda, invece, la possibilità che autobus effettuanti corse appartenenti a linee di trasporto urbane diverse possano passare nella stessa fermata esattamente nello stesso orario. |
-
 | Frasi relative agli ***autobus*** |
 |:-----------------------:|
 | Ogni autobus è identificato univocamente dal numero di immatricolazione (targa) ed è caratterizzato da un numero di posti (in piedi e a sedere). Un autobus può essere guidato da autisti diversi. |
@@ -192,8 +187,6 @@ Si vuole realizzare una base di dati per la gestione giornaliera di un sistema d
 - Il sistema di trasporto urbano sia organizzato in un certo insieme di \entita{linee di trasporto urbano}. Ogni linea di trasporto urbana sia identificata univocamente da un \attributo{numero} e sia caratterizzata da un certo \attributo{numero di fermate}. Si tenga traccia anche dell’\relazione{ordine} delle \entita{fermate} di una data linea di trasporto urbana. Ogni linea di trasporto urbana \relazione{è servita}, nello stesso giorno, da uno o più \entita{autobus}.
 
 - Ogni fermata sia identificata univocamente da un \attributo{nome}. Ad ogni fermata sia, inoltre, associato un \attributo{indirizzo}. Una fermata possa essere \relazione{raggiunta} da più linee di trasporto urbane.
-
-- Si tenga traccia anche dei \entita{passaggi} degli autobus \relazione{appartenenti} ad una determinata \entita{corsa} in una specifica fermata. Si assuma che una corsa possa effettuare più passaggi in una data fermata nel corso della giornata, ovviamente in orari diversi. Si escluda, invece, la possibilità che autobus effettuanti corse appartenenti a linee di trasporto urbane diverse possano passare nella stessa fermata esattamente nello stesso orario.
 
 - Ogni autobus è identificato univocamente dal \attributo{numero di immatricolazione (targa)} ed è caratterizzato da un \attributo{numero di posti (in piedi e a sedere)}. Un autobus può \relazione{essere guidato da} \entita{autisti} diversi.
 
