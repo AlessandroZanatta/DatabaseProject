@@ -196,6 +196,10 @@ Si vuole realizzare una base di dati per la gestione giornaliera di un sistema d
 
 \newpage
 
+## Schema Entità-Relazioni
+
+![](images/first_ER.pdf)
+
 # Progettazione logica
 
 \newpage
