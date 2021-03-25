@@ -198,7 +198,45 @@ Si vuole realizzare una base di dati per la gestione giornaliera di un sistema d
 
 ## Schema Entità-Relazioni
 
+La strategia di progetto utilizzata è la strategia mista.
+
+Si riporta di seguito il diagramma Entità-Relazioni risultante dallo sviluppo delle specifiche:
+
 ![](images/first_ER.pdf)
+
+\newpage
+
+### Vincoli aggiuntivi
+
+Si evidenzia il seguente ***vincolo aziendale***:
+
+- Nella relazione `composto`, per la stessa istanza di `linea di trasporto urbana`, non sono ammessi attributi `posizione` duplicati. Si noti che l'attributo `posizione` è inserito nello schema al fine di tener conto dell'ordine delle `fermate` della singola `linea di trasporto urbana`.
+
+Si indica inoltre il seguente ***vincolo di derivazione***:
+
+- L'attributo `numero di fermate` dell'entità `linea di trasporto urbana` è derivabile contando il numero di istanze di `fermata` in relazione con una data istanza di `linea di trasporto urbana`. 
+
+### Considerazioni
+
+Nello schema sono presenti dei cicli. Dato che i cicli potrebbero essere, potenzialmente, fonti di incoerenze, segue una loro analisi:
+
+1. Linea di trasporto - autobus - corsa
+    - Questo ciclo è problematico. Un `autobus` non può, infatti, essere utilizzato per eseguire una `corsa` che è istanza di una `linea di trasporto urbana` diversa da quella servita dall'`autobus` stesso. 
+1. Tessera - abbonamento
+    - Anche questo ciclo è problematico. Risulta infatti insensato che un `abbonamento` possa essere in relazione con una `tessera` sia in qualità di `abbonamento` valido che in qualità di `abbonamento` scaduto.
+
+
+Si riportano alcune decisioni progettuali attinenti alle cardinalità delle relazioni:
+
+- Il vincolo di partecipazione opzionale è stato utilizzato, nella relazione ternaria `ha eseguito`, sia per autobus che per autista in quanto:
+    - Un autobus potrebbe, se esso è nuovo o di riserva, non aver effettuato alcuna corsa
+    - Un autista potrebbe, nel caso in cui questo fosse neo-assunto, non aver eseguito alcuna corsa
+- Per considerazioni analoghe a quelle precedenti, la partecipazione di `autobus` alla relazione `servita da` è opzionale. Un autobus potrebbe, infatti, non servire alcuna `linea di trasporto urbano`.
+- La partecipazione nella relazione `ha usufruito` è, da ambo i lati, opzionale in quanto:
+    - Una `corsa` potrebbe non avere alcun `cliente` tra i passeggeri del mezzo
+    - Un `cliente` potrebbe, se appena tesserato, non aver usufruito di alcuna `corsa`
+
+\newpage
 
 # Progettazione logica
 
