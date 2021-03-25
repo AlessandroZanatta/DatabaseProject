@@ -212,9 +212,10 @@ Si evidenzia il seguente ***vincolo aziendale***:
 
 - Nella relazione `composto`, per la stessa istanza di `linea di trasporto urbana`, non sono ammessi attributi `posizione` duplicati. Si noti che l'attributo `posizione` è inserito nello schema al fine di tener conto dell'ordine delle `fermate` della singola `linea di trasporto urbana`.
 
-Si indica inoltre il seguente ***vincolo di derivazione***:
+Si indicano inoltre le seguenti ***regole di derivazione***:
 
 - L'attributo `numero di fermate` dell'entità `linea di trasporto urbana` è derivabile contando il numero di istanze di `fermata` in relazione con una data istanza di `linea di trasporto urbana`. 
+- L'attributo `numero di corse mensili` dell'entità `cliente` è derivabile contando il numero di istanze di `corsa` in un dato mese in relazione con una data istanza di `cliente`
 
 ### Considerazioni
 
@@ -239,6 +240,44 @@ Si riportano alcune decisioni progettuali attinenti alle cardinalità delle rela
 \newpage
 
 # Progettazione logica
+
+## Ristrutturazione dello schema Entità Relazioni
+
+### Analisi delle ridondanze
+
+Si definiscono, innanzitutto, i volumi dei dati:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Concetto}         & \textbf{Tipo} & \textbf{Volume} \\ \hline
+Fermata                   & Entità        & 225             \\ \hline
+Linea di trasporto urbana & Entità        & 15              \\ \hline
+Autobus                   & Entità        & 100             \\ \hline
+Corsa                     & Entità        & 450 al giorno   \\ \hline
+Autista                   & Entità        & 75              \\ \hline
+Cliente                   & Entità        & 7500            \\ \hline
+Tessera                   & Entità        & 7500            \\ \hline
+Abbonamento               & Entità        & 100000          \\ \hline
+Composto                  & Relazione     & 300             \\ \hline
+Istanza di                & Relazione     & 450 al giorno   \\ \hline
+Ha eseguito               & Relazione     & 450 al giorno   \\ \hline
+Ha usufruito              & Relazione     & 12000           \\ \hline
+Intestata                 & Relazione     & 7500            \\ \hline
+Scaduto                   & Relazione     & 92500           \\ \hline
+Valido                    & Relazione     & 7500            \\ \hline
+\end{tabular}
+\end{table}
+
+
+Da fare: 
+
+- Tavola delle operazione(Riprendere quelle già fatta  e farla meglio)
+- Analisi delle ridondanza
+- Eleminazione delle generalizzazioni
+- Partiozanamento/accorpamento di entità e associazioni
+- Scelta degli indetificatori principali
 
 \newpage
 
