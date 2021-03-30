@@ -5,8 +5,12 @@ date:
   - 10-09-2020
 header-includes:
   - \usepackage{amsmath}
+  - \usepackage[italian]{babel}
+  - \usepackage{float}
 geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
 ---
+
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
 
 \newpage
 
@@ -141,15 +145,14 @@ Riscriviamo ora quindi i requisiti ristrutturandoli in gruppi di frasi omogenee,
 
 <!-- Lo storico NON c'è in quanto si parla di una base di dati GIORNALIERA -->
 
-1. Inserimento di una nuove linea di trasporto urbano (2 all'anno)
-1. Inserimento di una nuova fermata in una linea di trasporto (20 all'anno) <!-- Scrittura su dato ridondante -->
-1. Inserimento di una nuova corsa (250 al giorno)
-1. Inserimento di una nuova corsa effettuata da un cliente (500000 al giorno) <!-- Scrittura su dato ridondante -->
-1. Lettura del numero di medio di corse mensili effettuate <!-- Lettura su dato ridondante -->
+1. Inserimento di una nuova fermata in una linea di trasporto (15 all'anno) <!-- Scrittura su dato ridondante -->
+1. Inserimento di una nuova corsa (450 al giorno)
+1. Inserimento di una nuova corsa effettuata da un cliente (12500 al giorno) <!-- Scrittura su dato ridondante -->
+1. Lettura del numero medio di corse mensili effettuate (1 al mese) <!-- Lettura su dato ridondante -->
 1. Inserimento di un nuovo cliente (50 al mese)
-1. Inserimento di un nuovo abbonamento (750 al mese)
+1. Inserimento di un nuovo abbonamento (2500 al mese)
 1. Stampa del numero di fermate per una data linea di trasporto urbana (una alla settimana) <!-- Lettura su dato ridondante -->
-1. Stampa del numero abbonamenti attualmente validi (una al giorno)
+1. Stampa del numero di abbonamenti attualmente validi (una al giorno)
 
 \newpage
 
@@ -245,7 +248,7 @@ Si riportano alcune decisioni progettuali attinenti alle cardinalità delle rela
 
 ### Analisi delle ridondanze
 
-Si definiscono, innanzitutto, i volumi dei dati:
+Si definiscono, innanzitutto, i volumi dei dati e si riportano le frequenze delle operazioni:
 
 \begin{table}[h]
 \centering
@@ -270,14 +273,189 @@ Valido                    & Relazione     & 7500            \\ \hline
 \end{tabular}
 \end{table}
 
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Operazione}}                           & \multicolumn{1}{c|}{\textbf{Frequenza}} \\ \hline
+Inserimento di una nuova fermata in una linea di trasporto & 15 all'anno     \\ \hline
+Inserimento di una nuova corsa                             & 450 al giorno   \\ \hline
+Inserimento di una nuova corsa effettuata da un cliente    & 12500 al giorno \\ \hline
+Lettura del numero medio di corse mensili effettuate       & 1 al mese       \\ \hline
+Inserimento di un nuovo cliente                            & 50 al mese      \\ \hline
+Inserimento di un nuovo abbonamento                        & 2500 al mese    \\ \hline
+Stampa del numero di fermate per una data linea di trasporto urbana & 1 alla settimana                        \\ \hline
+Stampa del numero di abbonamenti attualmente validi        & 1 al giorno     \\ \hline
+\end{tabular}
+\end{table}
+
+In base alle tabelle sopra definite, si è proseguito a creare le tavole degli accessi relative alle operazioni che presentano ridondanze.
+
+\newpage
+
+#### Numero di fermate {-}
+
+Segue l'analisi di vantaggi e svantaggi dell'attributo derivato `numero di fermate`, il quale riguarda le seguenti interrogazioni:
+
+1. Inserimento di una nuova fermata in una linea di trasporto
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+
+    \hline Fermata & Entità & 1 & Scrittura \\
+    \hline Composto & Relazione & 1 & Scrittura \\
+    \hline Linea di trasporto urbano & Entità & 1 & Lettura \\
+    \hline Linea di trasporto urbano & Entità & 1 & Scrittura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi in presenza di ridondanza}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+
+    \hline Fermata & Entità & 1 & Scrittura \\
+    \hline Composto & Relazione & 1 & Scrittura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi senza ridondanze}
+\end{table}
+
+2. Stampa del numero di fermate per una data linea di trasporto urbana
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Linea di trasporto urbano & Entità & 1 & Lettura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi in presenza di ridondanza}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Linea di trasporto urbano & Entità & 1 & Lettura \\
+    \hline Composto & Relazione & 20 & Lettura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi senza ridondanze}
+\end{table}
+
+
+Gli accessi, in lettura e scrittura, all'entità `linea di trasporto urbano`, richiesto in caso di ridondanza, è necessario per garantire che l'attributo derivato e ridondante `numero di fermate` sia aggiornato correttamente.
+
+I seguenti calcoli sono effettuati dando un peso doppio agli accessi in scrittura dato che questi risultano essere più dispendiosi.
+
+Il numero di accessi totale per la prima operazione è di $\left(2 + 2 + 1 + 2\right) \cdot 15 = 105$ accessi all'anno in caso di ridondanza.
+Il numero di accessi annui, in caso di assenza di dato ridondante, è di $\left(2 + 2\right) \cdot 15 = 60$.
+
+Il numero di accessi totale per la seconda operazione è di $1 \cdot \floor{\frac{365}{7}} = 52$ accessi all'anno in caso di ridondanza.
+In caso di assenza, il numero degli accessi sale a $21 \cdot \floor{\frac{365}{7}} = 1092$ all'anno.
+
+Si può quindi notare che, dato il maggior numero di accessi necessari in caso di mancanza della ridondanza (1152 contro 157), sia conveniente mantenere l'attributo derivato `numero di fermate`, a costo di un piccolo utilizzo aggiuntivo di memoria.
+
+#### Numero di corse mensili {-}
+
+Segue, infine, l'analisi di vantaggi e svantaggi dell'attributo derivato `numero di corse mensili`, il quale riguarda le seguenti interrogazioni:
+
+1. Inserimento di una nuova corsa effettuata da un cliente
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Ha usufruito & Relazione & 1 & Scrittura \\
+    \hline Cliente & Entità & 1 & Lettura \\
+    \hline Cliente & Entità & 1 & Scrittura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi in presenza di ridondanza}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Ha usufruito & Relazione & 1 & Scrittura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi senza ridondanze}
+\end{table}
+
+
+2. Lettura del numero medio di corse mensili effettuate[^1]
+
+[^1]: La tabella si riferisce agli accessi necessari per ogni cliente. I calcoli relativi alla totalità sono effettuati in seguito.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Cliente & Entità & 1 & Lettura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi in presenza di ridondanza}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\
+    \hline Cliente & Entità & 1 & Lettura \\
+    \hline Composto & Relazione & 45 & Lettura \\ 
+    \hline Corsa & Entità & 45 & Lettura \\
+    \hline
+\end{tabular}
+\caption{Tabella degli accessi senza ridondanze}
+\end{table}
+
+<!-- 45 = 4/5*2 * 28 (4/5*2 = 4/5 degli abbonati fanno due corse al giorno, *28 durata mensilità) -->
+
+L'accesso, in lettura e scrittura, all'entità `cliente`, richiesto in caso di ridondanza, è necessario per garantire che l'attributo derivato e ridondante `numero di corse mensili` sia aggiornato correttamente.
+
+Si ricorda che i seguenti calcoli sono effettuati dando un peso doppio agli accessi in scrittura.
+
+Il numero di accessi totale per la prima operazione è di $\left(2 + 1 + 2\right) \cdot (12000 \cdot 28) = 1680000$ accessi al mese in caso di ridondanza, dove $28$ è la durata di una mensilità.
+Il numero di accessi mensili, in caso di assenza di dato ridondante, è di $2 \cdot (12000 \cdot 28) = 672000$.
+
+Il numero di accessi totale per la seconda operazione è di $1 \cdot 7500 = 7500$ accessi al mese in caso di ridondanza, dove $7500$ è il numero di istanze attese dell'entità `cliente`.
+In caso di assenza, il numero degli accessi è invece di $(1 + 45 + 45) \cdot 7500 = 682500$ al mese.
+
+Ricapitolando, si hanno:
+
+ - 1687500 accessi in caso di ridondanza
+ - 1354500 accessi in assenza di ridondanza
+
+Risulta quindi conveniente **non** mantenere l'attributo `numero di corse mensili`.
 
 Da fare: 
 
-- Tavola delle operazione(Riprendere quelle già fatta  e farla meglio)
-- Analisi delle ridondanza
-- Eleminazione delle generalizzazioni
-- Partiozanamento/accorpamento di entità e associazioni
-- Scelta degli indetificatori principali
+- Eliminazione delle generalizzazioni
+- Partizionamento/accorpamento di entità e associazioni
+- Scelta degli identificatori principali
+
+
+## Ristrutturazione dello schema Entità Relazioni
+
+### Analisi delle ridondanze
 
 \newpage
 
