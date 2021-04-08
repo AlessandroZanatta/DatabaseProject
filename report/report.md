@@ -446,16 +446,44 @@ Ricapitolando, si hanno:
 
 Risulta quindi conveniente **non** mantenere l'attributo `numero di corse mensili`.
 
-Da fare: 
+
+### Eliminazione delle generalizzazioni
+
+L'unica generalizzazione presente nello schema E-R è quella che riguarda le entità `persona`, `autista` e `cliente`. Fra le tre possibili alternative di rimozione della generalizzazione, si è scelto di accorpare nei figli (`autista` e `cliente`) l'entità genitore (`persona`). Si è deciso di procedere in tale maniera in quanto risulta maggiormente conveniente in termini sia di memoria che di numero di accessi richiesti in quanto le interrogazioni più frequenti individuate riguardano le entità figlie.
+
+### Partizionamento/accorpamento di concetti
+
+#### Partizionamento di entità {-}
+
+Dato che non è stato ritenuto necessario alcun partizionamento, lo schema E-R non ha subito modifiche in tal senso.
+
+#### Eliminazione di attributi multivalore {-}
+
+L'unico attributo multivalore presente è quello relativo ai recapiti telefonici relativo all'entità `autista`.
+Si è provveduto a partizionarlo in due entità, `autista` e `telefono`, legate da una relazione uno a molti (opzionale dal lato dell'`autista`).
+
+#### Accorpamento di entità {-}
+
+Non si è ritenuto necessario accorpare alcuna entità anche data la scarsità di relazioni di tipo uno a uno.
+
+### Scelta degli identificatori principali
+
+L'unica entità con due chiavi candidate è l'entità `autista`. Al fine di avere una maggiore coerenza con la chiave utilizzata dall'entità `cliente`, si è scelto di mantenere come identificatore principale l'attributo `codice fiscale`.
+
+Si riporta nella pagina seguente, quindi, il diagramma E-R ristrutturato secondo le considerazioni sopra elencate.
+
+![](images/final_ER.pdf)
+
+Da farsi: 
 
 - Eliminazione delle generalizzazioni
 - Partizionamento/accorpamento di entità e associazioni
 - Scelta degli identificatori principali
 
 
-## Ristrutturazione dello schema Entità Relazioni
+## Traduzione verso il modello relazionale
 
-### Analisi delle ridondanze
+<!-- Dati i volumi di HaUsufruito, conviene creare un idCorsa in Corsa! --> 
 
 \newpage
 
