@@ -453,6 +453,14 @@ L'unica generalizzazione presente nello schema E-R è quella che riguarda le ent
 
 ### Partizionamento/accorpamento di concetti
 
+#### Eliminazione degli attributi composti {-}
+
+Gli attributi composti sono stati eliminati nel seguente modo:
+
+ - Per quanto riguarda l'attributo `indirizzo` relativo a `fermata`, è stato scelto di eliminare gli attributi figli in quanto si è maggiormente interessati all'indirizzo nella sua interezza;
+ - Considerando l'attributo `DataOra` dell'entità `ha eseguito`, si è deciso di mantenere l'attributo genitore, in quanto si prevede di accedervi nella sua interezza;
+ - In merito all'attributo `n. posti` dell'entità `autobus`, infine, è stato scomposto l'attributo dato che questo sarebbe risultato difficilmente rappresentabile unitamente.
+
 #### Partizionamento di entità {-}
 
 Dato che non è stato ritenuto necessario alcun partizionamento, lo schema E-R non ha subito modifiche in tal senso.
@@ -474,16 +482,104 @@ Si riporta nella pagina seguente, quindi, il diagramma E-R ristrutturato secondo
 
 ![](images/final_ER.pdf)
 
-Da farsi: 
-
-- Eliminazione delle generalizzazioni
-- Partizionamento/accorpamento di entità e associazioni
-- Scelta degli identificatori principali
-
+\newpage
 
 ## Traduzione verso il modello relazionale
 
-<!-- Dati i volumi di HaUsufruito, conviene creare un idCorsa in Corsa! --> 
+In riferimento all'ultimo schema ER, si è quindi proceduto alla stesura dello schema relazionale. Si noti che, durante la traduzione, sono state eseguite alcune rinomine, al fine di rendere lo schema più intuitivo.
+
+Si divide la traduzione in base alle tipologie di concetto da tradurre. In particolare si evidenziano:
+
+- Entità
+- Relazioni molti a molti
+- Relazioni uno a molti
+- Relazioni uno a uno
+
+### Entità
+
+Le seguenti entità vengono di seguito tradotte in modo definitivo:
+
+ - Fermata
+ - Linea di trasporto urbano
+ - Autobus
+ - Autista
+ - Corsa
+ - Cliente
+ - Tessera
+
+Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche durante la traduzione di alcune relazioni a cui sono legate.
+
+#### Traduzioni definitive {-}
+
+ - **Fermata**(\underline{Nome}, Indirizzo)
+    - Vincolo NotNull: Indirizzo
+ - **LineaTrasportoUrbano**(\underline{Numero}, NumeroFermate)
+ - **Autobus**(\underline{Targa}, InPiedi, Seduti)
+    - Vincolo NotNull: InPiedi, Seduti
+ - **Autista**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroPatente)
+    - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroPatente
+    - Vincolo Unique: NumeroPatente
+ - **Corsa**(\textit{\underline{DataOra, NumeroLinea}})
+    - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra verrà specificato in seguito <!-- TODO -->
+ - **Tessera**(\underline{NumeroTessera})
+
+#### Traduzioni che subiranno modifiche {-}
+
+ - **Cliente**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono, *Tessera*)
+    - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono
+ - **Abbonamento**(\underline{DataInizio}, TipoAbbonamento)
+    - Vincolo NotNull: TipoAbbonamento
+ - **Telefono**(\underline{Numero})
+
+
+### Relazioni molti a molti
+
+Questo tipi di relazioni viene sempre tradotta introducendo una nuova relazione nello schema relazionale.
+
+È importante notare che non tutti i vincoli di questo tipo di relazioni sono direttamente traducibili in SQL senza perdita di informazione, come verrà meglio indicato in seguito.
+
+ - **Composto**(\textit{\underline{NomeFermata, NumeroLinea}}, Posizione)
+    - Vincolo NotNull: Posizione
+    - Vincolo di chiave esterna: NomeFermata fa riferimento alla colonna `Nome` della relazionale `Fermata`, NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`
+ - **ServitoDa**(\textit{\underline{NumeroLinea, Targa}})
+    - Vincolo di chiave esterna: NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`, Targa fa riferimento alla colonna `Targa` della tabella `Autobus`
+ - **HaEseguito**(\textit\underline{{Autobus, Autista, DataOra}})
+    - Vincolo di chiave esterna: Autobus fa riferimento alla colonna `Targa` della tabella `Autobus`, Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
+ - **HaUsufruito**(\textit{\underline{Cliente, DataOra, NumeroLinea}})
+    - Vincolo di chiave esterna: Cliente fa riferimento alla colonna `CodiceFiscale` della tabella `Cliente`, DataOra fa riferimento alla colonna `DataOra` della tabella `Corsa`, NumeroLinea fa riferimento alla colonna `NumeroLinea` della tabella `Corsa`
+
+Alcuni vincoli, come riportato sopra, non sono esprimibili in quanto la relazione di sottoinsieme dato da una chiave esterna non è sufficiente a garantire la partecipazione obbligatoria di una data entità ad una certa relazione in caso di relazione molti a molti.
+Vengono, quindi, esplicitati alcuni vincoli aggiuntivi che verranno gestiti tramite appositi trigger:
+
+ - Vincolo di partecipazione obbligatoria fra l'entità `fermata` e la relazione `composto`;
+ - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `composto`;
+ - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `istanza di`;
+ - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `servita da`;
+ - Vincoli di partecipazione obbligatoria fra l'entità `tessera` e le relazioni `scaduto` e `valido`.
+
+### Relazioni uno a molti
+
+Questo tipo di relazioni è, solitamente, traducibile aggiungendo una chiave esterna nell'entità dal lato con cardinalità massima uno.
+Dato che l'entità `corsa` è debole, la traduzione della relazione `istanza di` è già stata effettuata in precedenza e non verrà trattata di seguito.
+
+- Recapito
+    - Viene apportata la seguente modifica alla relazione precedentemente definita: **Telefono**(\underline{Numero}, *Autista*)
+        - Vincolo NotNull: Autista
+        - Vincolo di chiave esterna: Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
+- Scaduto e Valido
+    - Queste due relazioni vengono tratte congiuntamente in quanto entrambe legano le entità `abbonamento` e `tessera`. Non è pertanto possibile aggiungere semplicemente una chiave esterna nella traduzione di `abbonamento` in quanto questo renderebbe impossibile codificare in SQL la differenza semantica delle due relazioni.
+    Le soluzioni possibili sono quindi due:
+        1. Mantenere le due relazioni separate. Per fare ciò è necessario utilizzare due tabelle distinte, una per relazione, ognuna delle quali include come chiavi esterna sia la tessera che l'abbonamento.
+        1. Unire le due relazioni in una sola e aggiungere un attributo che indica il tipo di relazione che lega abbonamento e tessera.
+    
+        Si è scelto di utilizzare la seconda soluzione, apportando in particolare una leggera modifica allo schema ER\footnote{La soluzione più naturale, dato lo schema ER corrente, risulterebbe la prima. Tuttavia si notano ora degli svantaggi dell'approccio seguito finora, come quello di dover .}. La traduzione risultante dalla seconda soluzione è quindi la seguente: **Abbonamento**(\textunderline{DataInizio, NumeroTessera}, TipoAbbonamento).
+            - Vincolo NotNull: TipoAbbonamento
+            - Vincolo di chiave esterna: NumeroTessera fa riferimento alla colonna `NumeroTessera` della tabella `Tessera`
+        La porzione di schema ER modificata è la sottostante:
+
+![](images/er_mod.png)
+        
+        
 
 \newpage
 
