@@ -486,7 +486,7 @@ Si riporta nella pagina seguente, quindi, il diagramma E-R ristrutturato secondo
 
 ## Traduzione verso il modello relazionale
 
-In riferimento all'ultimo schema ER, si è quindi proceduto alla stesura dello schema relazionale. Si noti che, durante la traduzione, sono state eseguite alcune rinomine, al fine di rendere lo schema più intuitivo.
+In riferimento all'ultimo schema ER, si è quindi proceduto alla stesura dello schema relazionale. Si noti che, durante la traduzione, sono state eseguite alcune rinomine, al fine di rendere lo schema più intuitivo. Sono inoltre stati introdotti alcuni vincoli aggiuntivi sui valori che alcuni attributi possono assumere, dei quali non si era tenuto conto nelle precedenti fasi di progettazione.
 
 Si divide la traduzione in base alle tipologie di concetto da tradurre. In particolare si evidenziano:
 
@@ -504,7 +504,6 @@ Le seguenti entità vengono di seguito tradotte in modo definitivo:
  - Autobus
  - Autista
  - Corsa
- - Cliente
  - Tessera
 
 Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche durante la traduzione di alcune relazioni a cui sono legate.
@@ -514,37 +513,44 @@ Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche d
  - **Fermata**(\underline{Nome}, Indirizzo)
     - Vincolo NotNull: Indirizzo
  - **LineaTrasportoUrbano**(\underline{Numero}, NumeroFermate)
+    - Vincolo NotNull: NumeroFermate
+    - Vincoli aggiuntivi: NumeroFermate > 0
  - **Autobus**(\underline{Targa}, InPiedi, Seduti)
     - Vincolo NotNull: InPiedi, Seduti
+    - Vincoli aggiuntivi: InPiedi + Seduti > 0
  - **Autista**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroPatente)
     - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroPatente
     - Vincolo Unique: NumeroPatente
  - **Corsa**(\textit{\underline{DataOra, NumeroLinea}})
-    - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra verrà specificato in seguito <!-- TODO -->
+    - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra si riferisce alla colonna `DataOra` di `HaEseguito`\footnote{Questa relazione è definita nella sezione 4.2.2} <!-- TODO mettilo come reference sto 4.2.2. -->
  - **Tessera**(\underline{NumeroTessera})
 
 #### Traduzioni che subiranno modifiche {-}
 
- - **Cliente**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono, *Tessera*)
+ - **Cliente**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono)
     - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono
- - **Abbonamento**(\underline{DataInizio}, TipoAbbonamento)
+ - **Abbonamento**(\underline{DataInizio, \textit{Tessera}}, TipoAbbonamento)
     - Vincolo NotNull: TipoAbbonamento
+    - Vincolo di chiave esterna: Tessera si riferisce alla chiave primaria di `Tessera`
  - **Telefono**(\underline{Numero})
 
 
 ### Relazioni molti a molti
 
-Questo tipi di relazioni viene sempre tradotta introducendo una nuova relazione nello schema relazionale.
+Questi tipi di relazioni vengono sempre tradotte introducendo una nuova relazione nello schema relazionale.
 
 È importante notare che non tutti i vincoli di questo tipo di relazioni sono direttamente traducibili in SQL senza perdita di informazione, come verrà meglio indicato in seguito.
 
  - **Composto**(\textit{\underline{NomeFermata, NumeroLinea}}, Posizione)
     - Vincolo NotNull: Posizione
     - Vincolo di chiave esterna: NomeFermata fa riferimento alla colonna `Nome` della relazionale `Fermata`, NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`
- - **ServitoDa**(\textit{\underline{NumeroLinea, Targa}})
+    - Vincolo Unique: la tripla (NomeFermata, NumeroLinea, Posizione) deve essere univoca per evitare situazioni invalide in cui diverse fermate della stessa linea si trovano nella stessa posizione
+    - Vincoli aggiuntivi: Posizione > 0
+ - **ServitaDa**(\textit{\underline{NumeroLinea, Targa}})
     - Vincolo di chiave esterna: NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`, Targa fa riferimento alla colonna `Targa` della tabella `Autobus`
- - **HaEseguito**(\textit\underline{{Autobus, Autista, DataOra}})
+ - **HaEseguito**(\textit{\underline{Autobus, Autista, DataOra}})
     - Vincolo di chiave esterna: Autobus fa riferimento alla colonna `Targa` della tabella `Autobus`, Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
+    - Vincoli aggiuntivi: DataOra non può riferirsi al futuro
  - **HaUsufruito**(\textit{\underline{Cliente, DataOra, NumeroLinea}})
     - Vincolo di chiave esterna: Cliente fa riferimento alla colonna `CodiceFiscale` della tabella `Cliente`, DataOra fa riferimento alla colonna `DataOra` della tabella `Corsa`, NumeroLinea fa riferimento alla colonna `NumeroLinea` della tabella `Corsa`
 
@@ -559,27 +565,72 @@ Vengono, quindi, esplicitati alcuni vincoli aggiuntivi che verranno gestiti tram
 
 ### Relazioni uno a molti
 
-Questo tipo di relazioni è, solitamente, traducibile aggiungendo una chiave esterna nell'entità dal lato con cardinalità massima uno.
+Questo tipo di relazioni è, solitamente, traducibile aggiungendo una chiave esterna nell'entità nel lato con cardinalità massima uno.
 Dato che l'entità `corsa` è debole, la traduzione della relazione `istanza di` è già stata effettuata in precedenza e non verrà trattata di seguito.
 
-- Recapito
-    - Viene apportata la seguente modifica alla relazione precedentemente definita: **Telefono**(\underline{Numero}, *Autista*)
-        - Vincolo NotNull: Autista
-        - Vincolo di chiave esterna: Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
-- Scaduto e Valido
-    - Queste due relazioni vengono tratte congiuntamente in quanto entrambe legano le entità `abbonamento` e `tessera`. Non è pertanto possibile aggiungere semplicemente una chiave esterna nella traduzione di `abbonamento` in quanto questo renderebbe impossibile codificare in SQL la differenza semantica delle due relazioni.
-    Le soluzioni possibili sono quindi due:
-        1. Mantenere le due relazioni separate. Per fare ciò è necessario utilizzare due tabelle distinte, una per relazione, ognuna delle quali include come chiavi esterna sia la tessera che l'abbonamento.
-        1. Unire le due relazioni in una sola e aggiungere un attributo che indica il tipo di relazione che lega abbonamento e tessera.
-    
-        Si è scelto di utilizzare la seconda soluzione, apportando in particolare una leggera modifica allo schema ER\footnote{La soluzione più naturale, dato lo schema ER corrente, risulterebbe la prima. Tuttavia si notano ora degli svantaggi dell'approccio seguito finora, come quello di dover .}. La traduzione risultante dalla seconda soluzione è quindi la seguente: **Abbonamento**(\textunderline{DataInizio, NumeroTessera}, TipoAbbonamento).
-            - Vincolo NotNull: TipoAbbonamento
-            - Vincolo di chiave esterna: NumeroTessera fa riferimento alla colonna `NumeroTessera` della tabella `Tessera`
-        La porzione di schema ER modificata è la sottostante:
+#### Recapito {-}
 
-![](images/er_mod.png)
-        
-        
+Viene apportata la seguente modifica alla relazione precedentemente definita:
+   
+ - **Telefono**(\underline{Numero}, *Autista*)
+    - Vincolo NotNull: Autista
+    - Vincolo di chiave esterna: Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
+
+#### Scaduto e Valido {-}
+Queste due relazioni vengono trattate congiuntamente in quanto entrambe legano le entità `abbonamento` e `tessera`. Non è pertanto possibile aggiungere semplicemente una chiave esterna nella traduzione di `abbonamento` in quanto questo renderebbe impossibile codificare in SQL la differenza semantica delle due relazioni.
+Le soluzioni possibili sono quindi due:
+
+1. Mantenere le due relazioni separate. Per fare ciò è necessario utilizzare due tabelle distinte, una per relazione, ognuna delle quali include come chiavi esterna sia la tessera che l'abbonamento.
+1. Unire le due relazioni in una sola e aggiungere un attributo che indica il tipo di relazione che lega abbonamento e tessera.
+
+Nonostante la seconda soluzione potrebbe, in apparenza, risultare migliore, si può notare che non risulterebbe efficiente. L'operazione `Stampa del numero di abbonamenti attualmente validi`, infatti, sarebbe estremamente più dispendiosa in termini di numero di accessi necessari. Si forniscono di seguito le relative tabelle.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\ \hline
+Valido            & Relazione          & 7500             & Lettura       \\ \hline
+\end{tabular}
+\caption{Tabella degli accessi della soluzione uno}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\ \hline
+Abbonamento       & Entità             & 92500+7500       & Lettura       \\ \hline
+\end{tabular}
+\caption{Tabella degli accessi della soluzione due}
+\end{table}
+
+Si può quindi notare come il numero di accessi, utilizzando la prima soluzione, sia inferiore di più di un ordine di grandezza.\footnote{Si analizzeranno gli effetti di questa decisione in seguito, in particolare durante la fase di progettazione fisica e di analisi dei dati.} <!-- TODO fallo eh -->
+Le tabelle sono quindi definite nel seguente modo:
+
+ - **Valido**(\textit{\underline{Tessera, DataInizio}})
+    - Vincoli di chiave esterna: Tessera fa riferimento alla chiave primaria della tabella `Tessera`, DataInizio fa riferimento alla colonna `DataInizio` di `Abbonamento`
+ - **Scaduto**(\textit{\underline{Tessera, DataInizio}})
+    - Vincoli di chiave esterna: Tessera fa riferimento alla chiave primaria della tabella `Tessera`, DataInizio fa riferimento alla colonna `DataInizio` di `Abbonamento`
+
+### Relazioni uno a uno
+
+Vi è una unica relazione uno a uno, quella che lega `cliente` a `tessera` tramite la relazione `intestata`.
+In questo caso è sufficiente aggiungere un chiave esterna ad una ed una sola entità, a scelta fra le due in relazione. Non essendoci operazioni riguardanti le tessere, si è scelto di aggiungere la chiave esterna nella relazione `cliente`, in quanto questo risulta maggiormente naturale.
+La definizione della relazione `cliente` è stata quindi modificata come segue:
+
+ - **Cliente**(\underline{CodiceFiscale}, Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono, *Tessera*)
+    - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroTelefono, Tessera
+    - Vincolo Unique: Tessera
+    - Vincolo di chiave esterna: Tessera fa riferimento alla colonna `NumeroTessera` della tabella `Tessera`
+ 
+\newpage
+
+### Schema finale
+
+Si riporta di seguito una visualizzazione dello schema.
+
+![](images/tables_schema_visual.pdf)
 
 \newpage
 
