@@ -131,7 +131,7 @@ Riscriviamo ora quindi i requisiti ristrutturandoli in gruppi di frasi omogenee,
 
 \newpage 
 
-## Operazioni frequenti sui dati
+## Operazioni frequenti sui dati {#operazioni-frequenti}
 
 <!-- Uno o due attributi derivati dal conteggio di relazioni con cui una certa entità partecipa (es. numero di fermate di una certa linea!) -->
 <!-- Attributi derivati (1-2, max 3), attributi composti, multivalore, generalizzazioni (1-2) -->
@@ -636,10 +636,22 @@ Si riporta di seguito una visualizzazione dello schema.
 
 # Progettazione fisica
 
+Per la fase di progettazione fisica si sono analizzate le [operazioni frequenti definite precedentemente](#operazioni-frequenti).
+
+Riguardo l'operazione `lettura del numero medio di corse mensili effettuate`, la creazione di un indice sull'attributo `DataOra` di `Corsa` potrebbe rendere la query più efficiente in quanto reperire le corse di interesse per l'interrogazione potrebbe risultare più efficiente.
+
+Considerando le restanti interrogazioni, non si ritiene sia necessario aggiungere ulteriori indici. Si noti, per esempio, che la query `stampa del numero di fermate per una data linea di trasporto urbana` non beneficerebbe in alcun modo di un indice grazie all'attributo ridondante `NumeroFermate`
+
+Si noti che si utilizzeranno alcuni [strumenti](https://www.postgresql.org/docs/8.2/indexes-examine.html) offerti dal DBMS postgres per analizzare l'efficacia dell'indice definito. Questo verrà effettuato una volta popolato il database completamente.
+
 \newpage
 
 # Implementazione
 
+
+
 \newpage
 
 # Analisi dei dati
+
+
