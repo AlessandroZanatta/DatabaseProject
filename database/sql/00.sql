@@ -27,6 +27,7 @@ CREATE DOMAIN NumeroPatente             AS CHAR(10)
     CHECK( VALUE ~ 'U1[0-9]{7}[A-Z]{1}' );
 CREATE DOMAIN NumeroTelefono            AS VARCHAR(10) 
     CHECK( VALUE ~ '^[0-9]{10}$' );
+CREATE DOMAIN DataOra                   AS TIMESTAMP;
 
 -------------------------------------------------------------------------------------
 -- TYPES
@@ -43,12 +44,10 @@ CREATE TABLE Fermata (
     Indirizzo VARCHAR(256)
 );
 
-
 CREATE TABLE LineaTrasportoUrbano (
     Numero        NumeroLineaTrasporto PRIMARY KEY,
     NumeroFermate INTEGER NOT NULL check(NumeroFermate > 0)
 );
-
 
 CREATE TABLE Composto (
     Posizione     INTEGER NOT NULL,
@@ -60,7 +59,6 @@ CREATE TABLE Composto (
     PRIMARY KEY (NumeroLinea,NumeroFermata)
 );
 
-
 CREATE TABLE Autobus (
     Targa   TargaAutobus PRIMARY KEY,
     InPiedi INTEGER NOT NULL CHECK(InPiedi >= 0),
@@ -69,11 +67,9 @@ CREATE TABLE Autobus (
     CHECK(InPiedi + Seduti > 0)
 );
 
-
 CREATE TABLE Tessera (
     NumeroTessera NumeroTessera PRIMARY KEY
 );
-
 
 CREATE TABLE Cliente (
     CodiceFiscale  CodiceFiscale PRIMARY KEY,
@@ -86,7 +82,6 @@ CREATE TABLE Cliente (
     
     FOREIGN KEY(Tessera) REFERENCES Tessera(NumeroTessera)
 );
-
 
 CREATE TABLE Autista (
     CodiceFiscale  CodiceFiscale PRIMARY KEY,
@@ -113,7 +108,6 @@ CREATE TABLE ServitaDa (
     PRIMARY KEY (NumeroLinea,Targa)
 );
 
-
 CREATE TABLE Abbonamento (
     DataInizio      DataInizio,
     Tessera         NumeroTessera REFERENCES Tessera(NumeroTessera),
@@ -121,7 +115,6 @@ CREATE TABLE Abbonamento (
 
     PRIMARY KEY(DataInizio,Tessera)
 );
-
 
 CREATE TABLE Scaduto (
     Tessera    NumeroTessera NOT NULL,
@@ -131,11 +124,47 @@ CREATE TABLE Scaduto (
     FOREIGN KEY(Tessera, DataInizio) REFERENCES Abbonamento(Tessera, DataInizio)
 );
 
-
 CREATE TABLE Valido (
     Tessera    NumeroTessera NOT NULL,
     DataInizio DataInizio    NOT NULL,
 
     PRIMARY KEY(Tessera, DataInizio),
     FOREIGN KEY(Tessera, DataInizio) REFERENCES Abbonamento(Tessera, DataInizio)
+);
+
+CREATE TABLE HaEseguito (
+    Autobus TargaAutobus REFERENCES Autobus(Targa) 
+        on UPDATE CASCADE on DELETE CASCADE,
+    Autista CodiceFiscale REFERENCES Autista(CodiceFiscale) 
+        on UPDATE CASCADE on DELETE CASCADE,
+    DataOra DataOra CHECK (DataOra <= NOW()),
+
+    PRIMARY KEY (Autobus, Autista, DataOra)
+);
+
+
+-- postgres-db_1  | 2021-04-28 22:07:30.933 UTC [48] ERROR:  there is no unique constraint matching given keys for referenced table "haeseguito"
+-- postgres-db_1  | 2021-04-28 22:07:30.933 UTC [48] STATEMENT:  CREATE TABLE Corsa (
+-- postgres-db_1  |            NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
+-- postgres-db_1  |                on UPDATE CASCADE on DELETE CASCADE,
+-- postgres-db_1  |            DataOra     DataOra REFERENCES HaEseguito(DataOra) 
+-- postgres-db_1  |                on UPDATE CASCADE on DELETE CASCADE
+-- postgres-db_1  |        );
+-- postgres-db_1  | psql:/docker-entrypoint-initdb.d/00.sql:150: ERROR:  there is no unique constraint matching given keys for referenced table "haeseguito"
+
+CREATE TABLE Corsa (
+    NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
+        on UPDATE CASCADE on DELETE CASCADE,
+    DataOra     DataOra REFERENCES HaEseguito(DataOra) 
+        on UPDATE CASCADE on DELETE CASCADE
+);
+
+CREATE TABLE HaUsufruito (
+    Cliente     CodiceFiscale REFERENCES Cliente(CodiceFiscale)
+        on UPDATE CASCADE on DELETE CASCADE,
+    DataOra     DataOra,
+    NumeroLinea NumeroLineaTrasporto,
+
+    PRIMARY KEY (Cliente, DataOra, NumeroLinea),
+    FOREIGN KEY (DataOra, NumeroLinea) REFERENCES Corsa(DataOra, NumeroLinea)
 );
