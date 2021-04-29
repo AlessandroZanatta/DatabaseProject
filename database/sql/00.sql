@@ -168,3 +168,4 @@ CREATE TABLE HaUsufruito (
     PRIMARY KEY (Cliente, DataOra, NumeroLinea),
     FOREIGN KEY (DataOra, NumeroLinea) REFERENCES Corsa(DataOra, NumeroLinea)
 );
+
