@@ -2,12 +2,6 @@
 
 To create new database initialization files, add them with an incremented file number, ending in `.sql` (e.g. `00.sql`, `01.sql`, ...). It will be run when the container is re-built.
 
-## Building it
+## Running it
 
-`docker-compose up --build -d`
-
-## Stopping it
-
-`docker-compose down -v`
-
-
+`docker-compose up --build -V`

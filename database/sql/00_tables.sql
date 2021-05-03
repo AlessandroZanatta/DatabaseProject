@@ -53,10 +53,10 @@ CREATE TABLE Composto (
     Posizione     INTEGER NOT NULL,
     NumeroLinea   NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
         ON UPDATE CASCADE ON DELETE CASCADE,
-    NumeroFermata NomeFermata REFERENCES Fermata(Nome) 
+    NomeFermata   NomeFermata REFERENCES Fermata(Nome) 
         ON UPDATE CASCADE ON DELETE CASCADE,
 
-    PRIMARY KEY (NumeroLinea,NumeroFermata)
+    PRIMARY KEY (NumeroLinea,NomeFermata)
 );
 
 CREATE TABLE Autobus (
@@ -132,40 +132,35 @@ CREATE TABLE Valido (
     FOREIGN KEY(Tessera, DataInizio) REFERENCES Abbonamento(Tessera, DataInizio)
 );
 
+/* Temporary fix */
+
 CREATE TABLE HaEseguito (
+    Id      INTEGER PRIMARY KEY, -- Added as a fix
     Autobus TargaAutobus REFERENCES Autobus(Targa) 
         on UPDATE CASCADE on DELETE CASCADE,
     Autista CodiceFiscale REFERENCES Autista(CodiceFiscale) 
         on UPDATE CASCADE on DELETE CASCADE,
-    DataOra DataOra CHECK (DataOra <= NOW()),
+    DataOra DataOra CHECK (DataOra <= NOW())
 
-    PRIMARY KEY (Autobus, Autista, DataOra)
+    -- PRIMARY KEY (Autobus, Autista, DataOra)
 );
-
-
--- postgres-db_1  | 2021-04-28 22:07:30.933 UTC [48] ERROR:  there is no unique constraint matching given keys for referenced table "haeseguito"
--- postgres-db_1  | 2021-04-28 22:07:30.933 UTC [48] STATEMENT:  CREATE TABLE Corsa (
--- postgres-db_1  |            NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
--- postgres-db_1  |                on UPDATE CASCADE on DELETE CASCADE,
--- postgres-db_1  |            DataOra     DataOra REFERENCES HaEseguito(DataOra) 
--- postgres-db_1  |                on UPDATE CASCADE on DELETE CASCADE
--- postgres-db_1  |        );
--- postgres-db_1  | psql:/docker-entrypoint-initdb.d/00.sql:150: ERROR:  there is no unique constraint matching given keys for referenced table "haeseguito"
 
 CREATE TABLE Corsa (
     NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
         on UPDATE CASCADE on DELETE CASCADE,
-    DataOra     DataOra REFERENCES HaEseguito(DataOra) 
-        on UPDATE CASCADE on DELETE CASCADE
+    EseguitoId  INTEGER REFERENCES HaEseguito(Id) 
+        on UPDATE CASCADE on DELETE CASCADE,
+    PRIMARY KEY (NumeroLinea, EseguitoId)
 );
 
 CREATE TABLE HaUsufruito (
     Cliente     CodiceFiscale REFERENCES Cliente(CodiceFiscale)
         on UPDATE CASCADE on DELETE CASCADE,
-    DataOra     DataOra,
+    EseguitoId  INTEGER,
     NumeroLinea NumeroLineaTrasporto,
 
-    PRIMARY KEY (Cliente, DataOra, NumeroLinea),
-    FOREIGN KEY (DataOra, NumeroLinea) REFERENCES Corsa(DataOra, NumeroLinea)
+    PRIMARY KEY (Cliente, EseguitoId, NumeroLinea),
+    FOREIGN KEY (EseguitoId, NumeroLinea) REFERENCES Corsa(EseguitoId, NumeroLinea)
 );
 
+/* End of temporary fix */

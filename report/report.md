@@ -211,9 +211,10 @@ Si riporta di seguito il diagramma Entità-Relazioni risultante dallo sviluppo d
 
 ### Vincoli aggiuntivi
 
-Si evidenzia il seguente ***vincolo aziendale***:
+Si evidenziano i seguenti ***vincoli aziendali***:
 
 - Nella relazione `composto`, per la stessa istanza di `linea di trasporto urbana`, non sono ammessi attributi `posizione` duplicati. Si noti che l'attributo `posizione` è inserito nello schema al fine di tener conto dell'ordine delle `fermate` della singola `linea di trasporto urbana`.
+- Ogni `tessera` deve essere in relazione con almeno una delle due relazioni `valido` e `scaduto`. Si assume infatti che ogni cliente abbia almeno un abbonamento, sia questo scaduto o ancora in vigore.
 
 Si indicano inoltre le seguenti ***regole di derivazione***:
 
@@ -561,7 +562,6 @@ Vengono, quindi, esplicitati alcuni vincoli aggiuntivi che verranno gestiti tram
  - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `composto`;
  - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `istanza di`;
  - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `servita da`;
- - Vincoli di partecipazione obbligatoria fra l'entità `tessera` e le relazioni `scaduto` e `valido`.
 
 ### Relazioni uno a molti
 
