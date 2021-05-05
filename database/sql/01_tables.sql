@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------------
 -- STARTUP / CLEANUP
 -------------------------------------------------------------------------------------
-
+CREATE EXTENSION pg_cron;
 DROP SCHEMA IF EXISTS SistemaTrasportoUrbano CASCADE;
 CREATE SCHEMA SistemaTrasportoUrbano;
 SET search_path TO SistemaTrasportoUrbano;
@@ -14,15 +14,15 @@ CREATE DOMAIN NomeFermata               AS VARCHAR(64);
 CREATE DOMAIN NumeroLineaTrasporto      AS VARCHAR(4); -- Might also be something like "B" as in Udine
 CREATE DOMAIN TargaAutobus              AS CHAR(7) 
     CHECK( VALUE ~ '^[A-Z]{2}[0-9]{3}[A-Z]{2}$' ); -- Check that the plate is a valid one
-CREATE DOMAIN NumeroTessera             AS VARCHAR(16);
+CREATE DOMAIN NumeroTessera             AS VARCHAR(32);
 CREATE DOMAIN CodiceFiscale             AS VARCHAR(16) 
     CHECK( VALUE ~ '^[A-Z]{6}[0-9]{2}[A-Z]{1}[0-9]{2}[A-Z]{1}[0-9]{3}[A-Z]{1}$' ); -- ValiDATE fiscal code
 CREATE DOMAIN Nome                      AS VARCHAR(256);
 CREATE DOMAIN Cognome                   AS VARCHAR(256);
 CREATE DOMAIN LuogoResidenza            AS VARCHAR(256);
 CREATE DOMAIN DataNascita               AS DATE;
-CREATE DOMAIN numeroTesseraScaduta      AS VARCHAR(10);
 CREATE DOMAIN DataInizio                AS DATE;
+CREATE DOMAIN DataFine                  AS DATE;
 CREATE DOMAIN NumeroPatente             AS CHAR(10) 
     CHECK( VALUE ~ 'U1[0-9]{7}[A-Z]{1}' );
 CREATE DOMAIN NumeroTelefono            AS VARCHAR(10) 
@@ -117,25 +117,23 @@ CREATE TABLE Abbonamento (
 );
 
 CREATE TABLE Scaduto (
-    Tessera    NumeroTessera NOT NULL,
-    DataInizio DataInizio    NOT NULL,
+    Tessera    NumeroTessera,
+    DataInizio DataInizio,
 
     PRIMARY KEY(Tessera, DataInizio),
     FOREIGN KEY(Tessera, DataInizio) REFERENCES Abbonamento(Tessera, DataInizio)
 );
 
 CREATE TABLE Valido (
-    Tessera    NumeroTessera NOT NULL,
-    DataInizio DataInizio    NOT NULL,
+    Tessera    NumeroTessera UNIQUE,
+    DataInizio DataInizio,
 
     PRIMARY KEY(Tessera, DataInizio),
     FOREIGN KEY(Tessera, DataInizio) REFERENCES Abbonamento(Tessera, DataInizio)
 );
 
-/* Temporary fix */
-
 CREATE TABLE HaEseguito (
-    Id      INTEGER PRIMARY KEY, -- Added as a fix
+    Id      INTEGER PRIMARY KEY,
     Autobus TargaAutobus REFERENCES Autobus(Targa) 
         on UPDATE CASCADE on DELETE CASCADE,
     Autista CodiceFiscale REFERENCES Autista(CodiceFiscale) 
@@ -162,5 +160,3 @@ CREATE TABLE HaUsufruito (
     PRIMARY KEY (Cliente, EseguitoId, NumeroLinea),
     FOREIGN KEY (EseguitoId, NumeroLinea) REFERENCES Corsa(EseguitoId, NumeroLinea)
 );
-
-/* End of temporary fix */

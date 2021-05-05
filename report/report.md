@@ -560,7 +560,7 @@ Vengono, quindi, esplicitati alcuni vincoli aggiuntivi che verranno gestiti tram
 
  - Vincolo di partecipazione obbligatoria fra l'entità `fermata` e la relazione `composto`;
  - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `composto`;
- - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `istanza di`;
+ - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `istanza di` (la quale è stata codificata tramite una chiave esterna in `corsa`);
  - Vincolo di partecipazione obbligatoria fra l'entità `linea di trasporto urbano` e la relazione `servita da`;
 
 ### Relazioni uno a molti
@@ -648,7 +648,7 @@ Si noti che si utilizzeranno alcuni [strumenti](https://www.postgresql.org/docs/
 
 # Implementazione
 
-
+<!-- TODO Abbiamo aggiunto un ID in HaEseguito durante l'implementazione al fine di evitare di dover portarci dietro 3 attributi (quelli che costituivano la chiave di HaEseguito) -->
 
 \newpage
 
