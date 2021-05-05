@@ -507,7 +507,7 @@ Le seguenti entità vengono di seguito tradotte in modo definitivo:
  - Corsa
  - Tessera
 
-Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche durante la traduzione di alcune relazioni a cui sono legate.
+Le entità `cliente`, `abbonamento`, `tessera` e `telefono` verrano invece trattate anche durante la traduzione di alcune relazioni a cui sono legate.
 
 #### Traduzioni definitive {-}
 
@@ -524,7 +524,6 @@ Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche d
     - Vincolo Unique: NumeroPatente
  - **Corsa**(\textit{\underline{DataOra, NumeroLinea}})
     - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra si riferisce alla colonna `DataOra` di `HaEseguito`\footnote{Questa relazione è definita nella sezione 4.2.2} <!-- TODO mettilo come reference sto 4.2.2. -->
- - **Tessera**(\underline{NumeroTessera})
 
 #### Traduzioni che subiranno modifiche {-}
 
@@ -533,6 +532,7 @@ Le entità `cliente`, `abbonamento` e `telefono` verrano invece trattate anche d
  - **Abbonamento**(\underline{DataInizio, \textit{Tessera}}, TipoAbbonamento)
     - Vincolo NotNull: TipoAbbonamento
     - Vincolo di chiave esterna: Tessera si riferisce alla chiave primaria di `Tessera`
+ - **Tessera**(\underline{NumeroTessera})
  - **Telefono**(\underline{Numero})
 
 
@@ -545,7 +545,7 @@ Questi tipi di relazioni vengono sempre tradotte introducendo una nuova relazion
  - **Composto**(\textit{\underline{NomeFermata, NumeroLinea}}, Posizione)
     - Vincolo NotNull: Posizione
     - Vincolo di chiave esterna: NomeFermata fa riferimento alla colonna `Nome` della relazionale `Fermata`, NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`
-    - Vincolo Unique: la tripla (NomeFermata, NumeroLinea, Posizione) deve essere univoca per evitare situazioni invalide in cui diverse fermate della stessa linea si trovano nella stessa posizione
+    - Vincolo unique: la tripla (NomeFermata, NumeroLinea, Posizione) deve essere univoca per evitare situazioni invalide in cui diverse fermate della stessa linea si trovano nella stessa posizione
     - Vincoli aggiuntivi: Posizione > 0
  - **ServitaDa**(\textit{\underline{NumeroLinea, Targa}})
     - Vincolo di chiave esterna: NumeroLinea fa riferimento alla colonna `Numero` della tabella `LineaTrasportoUrbano`, Targa fa riferimento alla colonna `Targa` della tabella `Autobus`
@@ -571,26 +571,25 @@ Dato che l'entità `corsa` è debole, la traduzione della relazione `istanza di`
 #### Recapito {-}
 
 Viene apportata la seguente modifica alla relazione precedentemente definita:
-   
+
  - **Telefono**(\underline{Numero}, *Autista*)
     - Vincolo NotNull: Autista
     - Vincolo di chiave esterna: Autista fa riferimento alla colonna `CodiceFiscale` della tabella `Autista`
 
 #### Scaduto e Valido {-}
 Queste due relazioni vengono trattate congiuntamente in quanto entrambe legano le entità `abbonamento` e `tessera`. Non è pertanto possibile aggiungere semplicemente una chiave esterna nella traduzione di `abbonamento` in quanto questo renderebbe impossibile codificare in SQL la differenza semantica delle due relazioni.
-Le soluzioni possibili sono quindi due:
+La soluzione che si è trovata in prima battuta è quella di aggiungere una attributo booleano `AbbonamentoValido` in `abbonamento`. Si noti inoltre che questo attributo non sarebbe nemmeno necessario in quanto sarebbe sufficiente derivare la validità dell'abbonamento confrontando la data di inizio dell'abbonamento stesso e la sua tipologia (la quale indica il periodo di durata).
 
-1. Mantenere le due relazioni separate. Per fare ciò è necessario utilizzare due tabelle distinte, una per relazione, ognuna delle quali include come chiavi esterna sia la tessera che l'abbonamento.
-1. Unire le due relazioni in una sola e aggiungere un attributo che indica il tipo di relazione che lega abbonamento e tessera.
+Una seconda alternativa sarebbe, invece, quella di mantenere la relazione `valido`.
 
-Nonostante la seconda soluzione potrebbe, in apparenza, risultare migliore, si può notare che non risulterebbe efficiente. L'operazione `Stampa del numero di abbonamenti attualmente validi`, infatti, sarebbe estremamente più dispendiosa in termini di numero di accessi necessari. Si forniscono di seguito le relative tabelle.
+Nonostante la prima soluzione potrebbe, in apparenza, risultare migliore, si può notare che non risulterebbe efficiente. L'operazione `Stampa del numero di abbonamenti attualmente validi`, infatti, sarebbe estremamente più dispendiosa in termini di numero di accessi necessari. Si forniscono di seguito le relative tabelle.
 
 \begin{table}[H]
 \centering
 \begin{tabular}{|c|c|c|c|}
 \hline
 \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\ \hline
-Valido            & Relazione          & 7500             & Lettura       \\ \hline
+Abbonamento       & Entità             & 92500+7500       & Lettura       \\ \hline
 \end{tabular}
 \caption{Tabella degli accessi della soluzione uno}
 \end{table}
@@ -600,16 +599,17 @@ Valido            & Relazione          & 7500             & Lettura       \\ \hl
 \begin{tabular}{|c|c|c|c|}
 \hline
 \textbf{Concetto} & \textbf{Costrutto} & \textbf{Accessi} & \textbf{Tipo} \\ \hline
-Abbonamento       & Entità             & 92500+7500       & Lettura       \\ \hline
+Valido            & Relazione          & 7500             & Lettura       \\ \hline
 \end{tabular}
 \caption{Tabella degli accessi della soluzione due}
 \end{table}
 
-Si può quindi notare come il numero di accessi, utilizzando la prima soluzione, sia inferiore di più di un ordine di grandezza.\footnote{Si analizzeranno gli effetti di questa decisione in seguito, in particolare durante la fase di progettazione fisica e di analisi dei dati.} <!-- TODO fallo eh -->
-Le tabelle sono quindi definite nel seguente modo:
+Si può quindi notare come il numero di accessi, utilizzando la seconda soluzione, sia inferiore di più di un ordine di grandezza.
+Le tabelle sono quindi definite nel seguente modo: \footnote{Si analizzeranno gli effetti di questa decisione in seguito, in particolare durante la fase di progettazione fisica e di analisi dei dati.} <!-- TODO fallo eh -->
 
  - **Valido**(\textit{\underline{Tessera, DataInizio}})
     - Vincoli di chiave esterna: Tessera fa riferimento alla chiave primaria della tabella `Tessera`, DataInizio fa riferimento alla colonna `DataInizio` di `Abbonamento`
+    - Vincolo unique: Tessera
  - **Scaduto**(\textit{\underline{Tessera, DataInizio}})
     - Vincoli di chiave esterna: Tessera fa riferimento alla chiave primaria della tabella `Tessera`, DataInizio fa riferimento alla colonna `DataInizio` di `Abbonamento`
 
