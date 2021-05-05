@@ -5,7 +5,7 @@ import os
 from random import randint
 
 fake = Faker(['it-IT'])
-sql_file = '../sql/05_tessere_clienti.sql'
+sql_file = 'sql/05_tessere_clienti.sql'
 
 cards = [fake.unique.credit_card_number() for _ in range(7500)]
 
