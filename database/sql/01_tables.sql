@@ -12,8 +12,7 @@ SET search_path TO SistemaTrasportoUrbano;
 
 CREATE DOMAIN NomeFermata               AS VARCHAR(64);
 CREATE DOMAIN NumeroLineaTrasporto      AS VARCHAR(4); -- Might also be something like "B" as in Udine
-CREATE DOMAIN TargaAutobus              AS CHAR(7) 
-    CHECK( VALUE ~ '^[A-Z]{2}[0-9]{3}[A-Z]{2}$' ); -- Check that the plate is a valid one
+CREATE DOMAIN TargaAutobus              AS VARCHAR(10);
 CREATE DOMAIN NumeroTessera             AS VARCHAR(32);
 CREATE DOMAIN CodiceFiscale             AS VARCHAR(16) 
     CHECK( VALUE ~ '^[A-Z]{6}[0-9]{2}[A-Z]{1}[0-9]{2}[A-Z]{1}[0-9]{3}[A-Z]{1}$' ); -- ValiDATE fiscal code
@@ -23,9 +22,9 @@ CREATE DOMAIN LuogoResidenza            AS VARCHAR(256);
 CREATE DOMAIN DataNascita               AS DATE;
 CREATE DOMAIN DataInizio                AS DATE;
 CREATE DOMAIN DataFine                  AS DATE;
-CREATE DOMAIN NumeroPatente             AS CHAR(10) 
-    CHECK( VALUE ~ 'U1[0-9]{7}[A-Z]{1}' );
-CREATE DOMAIN NumeroTelefono            AS VARCHAR(10) 
+CREATE DOMAIN NumeroPatente             AS CHAR(10);
+    --CHECK( VALUE ~ 'U1[0-9]{7}[A-Z]{1}' ); -- Removed as faker does not allow to create driver license numbers
+CREATE DOMAIN NumeroTelefono            AS VARCHAR(10)
     CHECK( VALUE ~ '^[0-9]{10}$' );
 CREATE DOMAIN DataOra                   AS TIMESTAMP;
 
@@ -50,11 +49,11 @@ CREATE TABLE LineaTrasportoUrbano (
 );
 
 CREATE TABLE Composto (
+    NomeFermata   NomeFermata REFERENCES Fermata(Nome)
+        ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE,
+    NumeroLinea   NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero)
+        ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE,
     Posizione     INTEGER NOT NULL,
-    NumeroLinea   NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    NomeFermata   NomeFermata REFERENCES Fermata(Nome) 
-        ON UPDATE CASCADE ON DELETE CASCADE,
 
     PRIMARY KEY (NumeroLinea,NomeFermata)
 );
@@ -84,7 +83,7 @@ CREATE TABLE Cliente (
 );
 
 CREATE TABLE Autista (
-    CodiceFiscale  CodiceFiscale PRIMARY KEY,
+    CodiceFiscale  CodiceFiscale  PRIMARY KEY,
     Nome           Nome           NOT NULL,
     Cognome        Cognome        NOT NULL,
     LuogoResidenza LuogoResidenza NOT NULL,
@@ -103,14 +102,14 @@ CREATE TABLE ServitaDa (
     Targa       TargaAutobus REFERENCES Autobus(Targa) 
         on UPDATE CASCADE on DELETE CASCADE,
     NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
-        on UPDATE CASCADE on DELETE CASCADE,
+        on UPDATE CASCADE on DELETE CASCADE DEFERRABLE,
 
     PRIMARY KEY (NumeroLinea,Targa)
 );
 
 CREATE TABLE Abbonamento (
-    DataInizio      DataInizio,
     Tessera         NumeroTessera REFERENCES Tessera(NumeroTessera),
+    DataInizio      DataInizio,
     TipoAbbonamento TipoAbbonamento NOT NULL,
 
     PRIMARY KEY(DataInizio,Tessera)
@@ -134,11 +133,11 @@ CREATE TABLE Valido (
 
 CREATE TABLE HaEseguito (
     Id      INTEGER PRIMARY KEY,
+    DataOra DataOra CHECK (DataOra <= NOW()),
     Autobus TargaAutobus REFERENCES Autobus(Targa) 
         on UPDATE CASCADE on DELETE CASCADE,
     Autista CodiceFiscale REFERENCES Autista(CodiceFiscale) 
-        on UPDATE CASCADE on DELETE CASCADE,
-    DataOra DataOra CHECK (DataOra <= NOW())
+        on UPDATE CASCADE on DELETE CASCADE
 
     -- PRIMARY KEY (Autobus, Autista, DataOra)
 );

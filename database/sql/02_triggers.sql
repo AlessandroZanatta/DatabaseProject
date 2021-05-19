@@ -17,14 +17,14 @@ $$
     BEGIN
         PERFORM
         FROM Composto
-        WHERE NomeFermata = new.NomeFermata
+        WHERE NumeroLinea = new.NumeroLinea
               AND Posizione = new.Posizione;
             
-        IF NOT found THEN
-            RETURN new;
-        ELSE
+        IF found THEN
             RAISE EXCEPTION 'Nella relazione composto, per la stessa istanza di linea di trasporto urbana, non sono ammessi attributi posizione duplicati.';
             RETURN NULL;
+        ELSE
+            RETURN new;
         END IF;
     END;
 $$;
@@ -101,6 +101,116 @@ CREATE TRIGGER check_valido_scaduto_trigger_delete
 BEFORE DELETE ON Scaduto
 FOR EACH ROW
 EXECUTE PROCEDURE check_valido_scaduto_delete();
+
+--------------------------------------------------------------------------------------------------------------
+-- VINCOLI RISPETTIVI AI CICLI
+--------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------
+-- 1) Linea di trasporto - autobus - corsa;
+-- Il vincolo può essere violato dalle seguenti operazioni:
+--  - INSERT o UPDATE su Corsa può invalidare il vincolo
+--  - DELETE da ServitaDa
+--------------------------------------------------------------------------------------------------------------
+
+CREATE FUNCTION check_linea_autobus_corsa_ciclo_insert_update()
+RETURNS trigger
+LANGUAGE plpgsql AS
+$$
+    BEGIN
+        PERFORM 
+        FROM (HaEseguito INNER JOIN Autobus
+             ON Autobus = Targa) NATURAL JOIN ServitaDa
+        WHERE Id = new.EseguitoId
+            AND NumeroLinea = new.NumeroLinea;
+            
+        IF found THEN
+            RETURN new;
+        ELSE
+            RAISE EXCEPTION 'Linea di trasporto - autobus - corsa (INSERT/UPDATE)!';
+            RETURN NULL;
+        END IF;
+    END;
+$$;
+
+CREATE TRIGGER check_linea_autobus_corsa_insert_update_trigger
+BEFORE INSERT OR UPDATE ON Corsa
+FOR EACH ROW
+EXECUTE PROCEDURE check_linea_autobus_corsa_ciclo_insert_update();
+
+CREATE FUNCTION check_linea_autobus_corsa_ciclo_delete()
+RETURNS trigger
+LANGUAGE plpgsql AS
+$$
+    BEGIN
+        PERFORM
+        FROM (HaEseguito INNER JOIN Autobus ON Targa = Autobus)
+             INNER JOIN Corsa ON Id = HaEseguitoId
+        WHERE Autobus = old.Targa
+              AND NumeroLinea = old.NumeroLinea;
+
+        IF found THEN
+            RAISE EXCEPTION 'Linea di trasporto - autobus - corsa (DELETE)!';
+            RETURN NULL;
+        ELSE
+            RETURN new;
+        END IF;
+    END;
+$$;
+
+--------------------------------------------------------------------------------------------------------------
+-- 1) Tessera - abbonamento;
+-- Il vincolo può essere violato dalle seguenti operazioni:
+--  - INSERT o UPDATE su Valido o Scaduto
+--------------------------------------------------------------------------------------------------------------
+
+CREATE FUNCTION check_valido_scaduto_ciclo()
+RETURNS trigger
+LANGUAGE plpgsql AS
+$$
+    BEGIN
+        PERFORM
+        FROM Scaduto
+        WHERE Tessera = new.Tessera
+              AND DataInizio = new.DataInizio;
+
+        IF found THEN
+            RAISE EXCEPTION 'Tessera - abbonamento ciclo (valido)!';
+            RETURN NULL;
+        ELSE
+            RETURN new;
+        END IF;
+    END;
+$$;
+
+CREATE TRIGGER check_valido_scaduto_ciclo_trigger
+BEFORE INSERT OR UPDATE ON Valido
+FOR EACH ROW
+EXECUTE PROCEDURE check_valido_scaduto_ciclo();
+
+CREATE FUNCTION check_scaduto_valido_ciclo()
+RETURNS trigger
+LANGUAGE plpgsql AS
+$$
+    BEGIN
+        PERFORM
+        FROM Valido
+        WHERE Tessera = new.Tessera
+              AND DataInizio = new.DataInizio;
+
+        IF found THEN
+            RAISE EXCEPTION 'Tessera - abbonamento ciclo (scaduto)!';
+            RETURN NULL;
+        ELSE
+            RETURN new;
+        END IF;
+    END;
+$$;
+
+CREATE TRIGGER check_scaduto_valido_ciclo_trigger
+BEFORE INSERT OR UPDATE ON Scaduto
+FOR EACH ROW
+EXECUTE PROCEDURE check_scaduto_valido_ciclo();
 
 --------------------------------------------------------------------------------------------------------------
 -- ALTRI VINCOLI

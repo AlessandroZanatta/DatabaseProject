@@ -265,6 +265,7 @@ Cliente                   & Entità        & 7500            \\ \hline
 Tessera                   & Entità        & 7500            \\ \hline
 Abbonamento               & Entità        & 100000          \\ \hline
 Composto                  & Relazione     & 300             \\ \hline
+Servita da                & Relazione     & 90              \\ \hline
 Istanza di                & Relazione     & 450 al giorno   \\ \hline
 Ha eseguito               & Relazione     & 450 al giorno   \\ \hline
 Ha usufruito              & Relazione     & 12000           \\ \hline
