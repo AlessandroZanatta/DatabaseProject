@@ -1,3 +1,1 @@
-database/sql/05_tessere_clienti.sql
-database/sql/06_autista_telefono_autobus.sql
-database/sql/07_popolamento_restante.sql
+database/sql/05_populate.sql
