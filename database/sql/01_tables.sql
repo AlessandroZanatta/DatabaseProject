@@ -144,7 +144,7 @@ CREATE TABLE HaEseguito (
 
 CREATE TABLE Corsa (
     NumeroLinea NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero) 
-        on UPDATE CASCADE on DELETE CASCADE,
+        on UPDATE CASCADE on DELETE CASCADE DEFERRABLE,
     EseguitoId  INTEGER REFERENCES HaEseguito(Id) 
         on UPDATE CASCADE on DELETE CASCADE,
     PRIMARY KEY (NumeroLinea, EseguitoId)

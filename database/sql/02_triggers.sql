@@ -113,6 +113,7 @@ EXECUTE PROCEDURE check_valido_scaduto_delete();
 --  - DELETE da ServitaDa
 --------------------------------------------------------------------------------------------------------------
 
+/*
 CREATE FUNCTION check_linea_autobus_corsa_ciclo_insert_update()
 RETURNS trigger
 LANGUAGE plpgsql AS
@@ -157,7 +158,7 @@ $$
         END IF;
     END;
 $$;
-
+*/
 --------------------------------------------------------------------------------------------------------------
 -- 1) Tessera - abbonamento;
 -- Il vincolo può essere violato dalle seguenti operazioni:

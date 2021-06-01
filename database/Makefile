@@ -1,6 +1,6 @@
 
 all:
-	cd scripts && ./populate.py
+	cd scripts && time ./populate.py
 	# cd scripts && ./run.sh
 	@echo "Starting container..."
 	@sleep 2

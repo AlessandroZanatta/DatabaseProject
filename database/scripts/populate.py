@@ -40,7 +40,6 @@ telephone_numbers = InsertQuery('Telefono', 'Numero', 'Autista')
 #-------------#
 # - Autobus - #
 #-------------#
-
 for _ in range(N_AUTOBUS):
     plate = fake.unique.license_plate()
     autobuses.append(plate, random.randint(10, 30), random.randint(10, 30))
@@ -148,6 +147,9 @@ with open(sql_file, 'a') as f:
 
 # -------------------------------------------------------------------------------------------------- #
 
+#----------------#
+# - HaEseguito - #
+#----------------#
 executed = InsertQuery('HaEseguito', 'Id', 'DataOra', 'AutoBus', 'Autista')
 for i in range(N_RIDES):
     date = fake.date_time()
@@ -155,17 +157,26 @@ for i in range(N_RIDES):
     driver = random.choice(drivers.get_col('CodiceFiscale'))
     executed.append(i, date, autobus, driver)
 
+#--------------------------#
+# - LineaTrasportoUrbano - #
+#--------------------------#
 lines = InsertQuery('LineaTrasportoUrbano', 'Numero', 'NumeroFermate')
 for i in range(N_LINES):
     number = str(i)
     number_of_stops = random.randint(10, 30) # mean = 20
     lines.append(number, number_of_stops)
 
+#-----------#
+# - Corsa - #
+#-----------#
 rides = InsertQuery('Corsa', 'NumeroLinea', 'EseguitoId')
 for i in range(N_RIDES):
-    line = random.randint(1, N_LINES)
+    line = i % N_LINES 
     rides.append(line, i)
 
+#---------------#
+# - ServitaDa - #
+#---------------#
 served_by = InsertQuery('ServitaDa', 'Targa', 'NumeroLinea')
 check = {i:[] for i in range(N_LINES)}
 for i in range(N_SERVED):
@@ -177,6 +188,9 @@ for i in range(N_SERVED):
     check[line].append(autobus)
     served_by.append(autobus, line)
 
+#-------------#
+# - Fermata - #
+#-------------#
 busstops = InsertQuery('Fermata', 'Nome', 'Indirizzo')
 for i in range(N_STOPS):
     name = fake.unique.md5()
@@ -184,20 +198,21 @@ for i in range(N_STOPS):
 
     busstops.append(name, address)
 
+#--------------#
+# - Composto - #
+#--------------#
 composto = InsertQuery('Composto', 'NomeFermata', 'NumeroLinea', 'Posizione')
-check = {}
+j = 0
 for line, nstops in lines.get_zipped('Numero', 'NumeroFermate'):
-    check[line] = []
+    busstops_names = busstops.get_col('Nome')
     for i in range(int(nstops)):
-        while True:
-            stopname = random.choice(busstops.get_col('Nome'))
-            if stopname not in check[line]:
-                break
-        
-        check[line].append(stopname)
+        stopname = busstops_names[j % len(busstops_names)] # random.choice(busstops.get_col('Nome'))
         composto.append(stopname, line, i+1) # from 1 to nstops
+        j += 1
 
-
+#-----------------#
+# - HaUsufruito - #
+#-----------------#
 used = InsertQuery('HaUsufruito', 'Cliente', 'EseguitoId', 'NumeroLinea')
 for _ in range(N_USED):
     execd, line = random.choice(rides.get_zipped('EseguitoId', 'NumeroLinea'))
@@ -205,12 +220,14 @@ for _ in range(N_USED):
     used.append(user, execd, line)
 
 with open(sql_file, 'a') as f:
-    f.write('START TRANSACTION;')
-    f.write('SET CONSTRAINTS ALL DEFERRED;')
+    f.write('START TRANSACTION;\n')
+    f.write('SET CONSTRAINTS ALL DEFERRED;\n')
     f.write(str(served_by))
     f.write(str(composto))
-    f.write(str(lines))
     f.write(str(busstops))
     f.write(str(executed))
     f.write(str(rides))
+    f.write(str(lines))
     f.write(str(used))
+    f.write('COMMIT;\n')
+
