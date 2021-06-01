@@ -148,7 +148,7 @@ Riscriviamo ora quindi i requisiti ristrutturandoli in gruppi di frasi omogenee,
 1. Inserimento di una nuova fermata in una linea di trasporto (15 all'anno) <!-- Scrittura su dato ridondante -->
 1. Inserimento di una nuova corsa (450 al giorno)
 1. Inserimento di una nuova corsa effettuata da un cliente (12500 al giorno) <!-- Scrittura su dato ridondante -->
-1. Lettura del numero medio di corse mensili effettuate (1 al mese) <!-- Lettura su dato ridondante -->
+1. Lettura del numero di corse mensili effettuate (1 al mese) <!-- Lettura su dato ridondante -->
 1. Inserimento di un nuovo cliente (50 al mese)
 1. Inserimento di un nuovo abbonamento (2500 al mese)
 1. Stampa del numero di fermate per una data linea di trasporto urbana (una alla settimana) <!-- Lettura su dato ridondante -->
@@ -283,7 +283,7 @@ Valido                    & Relazione     & 7500            \\ \hline
 Inserimento di una nuova fermata in una linea di trasporto & 15 all'anno     \\ \hline
 Inserimento di una nuova corsa                             & 450 al giorno   \\ \hline
 Inserimento di una nuova corsa effettuata da un cliente    & 12500 al giorno \\ \hline
-Lettura del numero medio di corse mensili effettuate       & 1 al mese       \\ \hline
+Lettura del numero di corse mensili effettuate       & 1 al mese       \\ \hline
 Inserimento di un nuovo cliente                            & 50 al mese      \\ \hline
 Inserimento di un nuovo abbonamento                        & 2500 al mese    \\ \hline
 Stampa del numero di fermate per una data linea di trasporto urbana & 1 alla settimana                        \\ \hline
@@ -400,7 +400,7 @@ Segue, infine, l'analisi di vantaggi e svantaggi dell'attributo derivato `numero
 \end{table}
 
 
-2. Lettura del numero medio di corse mensili effettuate[^1]
+2. Lettura del numero di corse mensili effettuate[^1]
 
 [^1]: La tabella si riferisce agli accessi necessari per ogni cliente. I calcoli relativi alla totalità sono effettuati in seguito.
 
@@ -639,7 +639,7 @@ Si riporta di seguito una visualizzazione dello schema.
 
 Per la fase di progettazione fisica si sono analizzate le [operazioni frequenti definite precedentemente](#operazioni-frequenti).
 
-Riguardo l'operazione `lettura del numero medio di corse mensili effettuate`, la creazione di un indice sull'attributo `DataOra` di `Corsa` potrebbe rendere la query più efficiente in quanto reperire le corse di interesse per l'interrogazione potrebbe risultare più efficiente.
+Riguardo l'operazione `lettura del numero di corse mensili effettuate`, la creazione di un indice sull'attributo `DataOra` di `Corsa` potrebbe rendere la query più efficiente in quanto reperire le corse di interesse per l'interrogazione potrebbe risultare più efficiente.
 
 Considerando le restanti interrogazioni, non si ritiene sia necessario aggiungere ulteriori indici. Si noti, per esempio, che la query `stampa del numero di fermate per una data linea di trasporto urbana` non beneficerebbe in alcun modo di un indice grazie all'attributo ridondante `NumeroFermate`
 
