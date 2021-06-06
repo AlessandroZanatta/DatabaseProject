@@ -8,3 +8,5 @@ services:
     environment:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432 

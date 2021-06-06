@@ -1,0 +1,94 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(DBI)
+library(RPostgres)
+library(tibble)
+```
+
+
+```{r}
+host_db <- "localhost"
+db_port <- "5432"
+db <- "postgres"
+db_user <- "postgres"
+db_password <- "postgres"
+db_schema <- "SistemaTrasportoUrbano"
+```
+
+```{r}
+con <- dbConnect(
+            Postgres(),
+            dbname = db,
+            host = host_db,
+            port = db_port,
+            user = db_user,
+            password = db_password,
+            options = paste("-c search_path=", db_schema, sep="")
+    )
+
+dbListTables(con)
+```
+
+
+
+```{r}
+if (FALSE) {
+
+# Queries
+
+# 1 Fedeltà clienti , quanti abbonamenti sono stati rinnovati
+query_1 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT (COUNT(Tessera)-1) AS ABBONAMENTI_RINNOVATI
+                     FROM Scaduto FULL JOIN Valido
+                         ON Scaduto.Tessera = Valido.Tessera
+                    GROUP BY Tessera")
+            )
+
+# 2 Stampa numero di corse per anno
+query_2 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT EXTRACT(YEAR from Dataora) AS Anno, COUNT(*)
+                     FROM CORSA
+                     GROUP By Anno")
+            )
+
+# 3 Luogo di residenza degli abbonati
+query_3 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT LuogoDiResidenza
+                     FROM Cliente
+                     GROUP BY LuogoDiResidenza")
+            )
+
+# 4 Numeri di abbonati che usufruiscono del servizio per anno
+# GRAFICO PUNTO LINEA
+query_4 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT Count(Cliente),EXTRACT(YEAR from Dataora) AS YEAR
+                     FROM HaUsufruito
+                     GROUP BY YEAR")
+            )
+
+# 5 Distribuzione di età degli abbonati, GRAFICO A TORTA
+query_5 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT EXTRACT(YEAR from DataDiNascita)AS YEAR
+                     FROM CLIENTE
+                     GROUP BY YEAR")
+            )
+
+# 6 Autisti che hanno fatto più corse
+query_6 <- tibble(dbSendQuery(
+                    con,
+                    "SELECT AUTISTA,COUNT(AUTISTA) AS Numero_Corse
+                     FROM HaEseguito
+                     GROUP BY AUTISTA")
+            )
+
+}
+```

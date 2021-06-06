@@ -77,12 +77,12 @@ $$
     END;
 $$;
 
-CREATE TRIGGER decrement_NumeroFermate_trigger
+CREATE TRIGGER increment_NumeroFermate_trigger
 AFTER INSERT ON Composto
 FOR EACH ROW
 EXECUTE PROCEDURE increment_NumeroFermate();
 
-CREATE FUNCTION increment_NumeroFermate()
+CREATE FUNCTION decrement_NumeroFermate()
 RETURNS trigger
 LANGUAGE plpgsql AS
 $$
@@ -99,4 +99,4 @@ $$;
 CREATE TRIGGER decrement_NumeroFermate_trigger
 AFTER DELETE ON Composto
 FOR EACH ROW
-EXECUTE PROCEDURE decrement_NumeroFermate_trigger();
+EXECUTE PROCEDURE decrement_NumeroFermate()
