@@ -4,9 +4,9 @@ output: html_notebook
 ---
 
 ```{r}
+library(tidyverse)
 library(DBI)
 library(RPostgres)
-library(tibble)
 ```
 
 
@@ -27,68 +27,206 @@ con <- dbConnect(
             port = db_port,
             user = db_user,
             password = db_password,
-            options = paste("-c search_path=", db_schema, sep="")
+            options = paste("-c search_path=", db_schema, sep = "")
     )
-
-dbListTables(con)
 ```
 
 
+```{r}
+query <- function(con, query) {
+    res <- dbSendQuery(con, query)
+    result <- tibble(dbFetch(res))
+    dbClearResult(res)
+
+    result
+}
+```
+
 
 ```{r}
-if (FALSE) {
+# ----------- #
+# - Queries - #
+# ----------- #
 
-# Queries
-
-# 1 Fedeltà clienti , quanti abbonamenti sono stati rinnovati
-query_1 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT (COUNT(Tessera)-1) AS ABBONAMENTI_RINNOVATI
-                     FROM Scaduto FULL JOIN Valido
-                         ON Scaduto.Tessera = Valido.Tessera
-                    GROUP BY Tessera")
-            )
+# 1 Fedeltà clienti, quanti abbonamenti sono stati rinnovati
+query_1 <- query(con, "SELECT Card, COUNT(*) AS num
+                       FROM (SELECT COUNT(*) AS Card
+                       FROM Abbonamento
+                       GROUP BY Tessera) AS TMP
+                       GROUP BY Card")
 
 # 2 Stampa numero di corse per anno
-query_2 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT EXTRACT(YEAR from Dataora) AS Anno, COUNT(*)
-                     FROM CORSA
-                     GROUP By Anno")
-            )
+query_2 <- query(con, "SELECT EXTRACT(YEAR from DataOra) AS Anno, COUNT(*) AS num
+                       FROM Corsa INNER JOIN HaEseguito
+                            ON EseguitoId = Id
+                       GROUP By Anno")
 
 # 3 Luogo di residenza degli abbonati
-query_3 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT LuogoDiResidenza
-                     FROM Cliente
-                     GROUP BY LuogoDiResidenza")
-            )
+query_3 <- query(con, "SELECT LuogoResidenza
+                       FROM Cliente")
 
 # 4 Numeri di abbonati che usufruiscono del servizio per anno
 # GRAFICO PUNTO LINEA
-query_4 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT Count(Cliente),EXTRACT(YEAR from Dataora) AS YEAR
-                     FROM HaUsufruito
-                     GROUP BY YEAR")
-            )
+query_4 <- query(con, "SELECT Count(Cliente) AS NUMERO,
+                              EXTRACT(YEAR from Dataora) AS YEAR
+                       FROM HaUsufruito INNER JOIN HaEseguito
+                            ON EseguitoId = Id
+                       GROUP BY YEAR")
 
 # 5 Distribuzione di età degli abbonati, GRAFICO A TORTA
-query_5 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT EXTRACT(YEAR from DataDiNascita)AS YEAR
-                     FROM CLIENTE
-                     GROUP BY YEAR")
-            )
+query_5 <- query(con, "SELECT COUNT(*) AS num,
+                              EXTRACT(YEAR from DataNascita) AS YEAR
+                      FROM Cliente
+                      GROUP BY YEAR")
 
 # 6 Autisti che hanno fatto più corse
-query_6 <- tibble(dbSendQuery(
-                    con,
-                    "SELECT AUTISTA,COUNT(AUTISTA) AS Numero_Corse
-                     FROM HaEseguito
-                     GROUP BY AUTISTA")
-            )
+query_6 <- query(con, "SELECT Autista,COUNT(Autista) AS NUMERO_CORSE
+                      FROM HaEseguito
+                      GROUP BY Autista")
+```
 
-}
+
+```{r}
+print(query_1)
+print(query_2)
+print(query_3)
+print(query_4)
+print(query_5)
+print(query_6)
+```
+
+
+```{r}
+tmp <- query_1 %>%
+    mutate_all(as.numeric) %>%
+    transform(card = as.character(card)) %>%
+    ggplot(aes(x = card, y = num, fill = -num)) +
+    geom_bar(stat = "identity", colour = "black") +
+    scale_y_continuous(limits = c(0, 6000)) +
+    theme(legend.position = "none") +
+    labs(
+         x = "Numero di abbonamenti rinnovati",
+         y = "Occorrenze",
+         title = "Abbonamenti rinnovati"
+    ) +
+    scale_fill_continuous(low = "#511845", high = "#ff5733")
+
+tmp
+ggsave("output/query_1.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+tmp <- query_2 %>%
+    mutate_all(as.numeric) %>%
+    transform(anno = as.character(anno)) %>%
+    arrange(-num) %>%
+    head(10) %>%
+    ggplot(aes(x = reorder(anno, -num), y = num, fill = -num)) +
+    geom_bar(stat = "identity", colour = "black") +
+    theme(legend.position = "none") +
+    scale_y_continuous(limits = c(0, 3400)) +
+    labs(
+         x = "Anno",
+         y = "Numero corse",
+         title = "Numero di corse per anno"
+    ) +
+    scale_fill_continuous(low = "#e18400", high = "#ffff00")
+
+tmp
+ggsave("output/query_2.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+tmp <- query_3 %>%
+    mutate(
+           provincia = str_match(luogoresidenza, ".*\\(([A-Z]{2})\\).*$")[, 2]
+    ) %>%
+    select(provincia) %>%
+    count(provincia) %>%
+    arrange(-n) %>%
+    head(10) %>%
+    ggplot(aes(x = reorder(provincia, -n), y = n, fill = -n)) +
+    geom_bar(stat = "identity", colour = "black") +
+    theme(legend.position = "none") +
+    labs(
+         x = "Provincia",
+         y = "Occorrenze",
+         title = "Provincie di appartenenza dei clienti"
+    ) +
+    scale_fill_continuous(low = "#00909e", high = "#c8faff")
+
+tmp
+ggsave("output/query_3.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+tmp <- query_4 %>%
+    mutate_all(as.numeric) %>%
+    transform(year = as.character(year)) %>%
+    ggplot(aes(x = year, y = numero, group = 1)) +
+    geom_line(color = "#f8766d") +
+    geom_point() +
+    labs(
+         x = "Anno",
+         y = "Corse",
+         title = "Numero di corse per ogni anno"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+
+tmp
+ggsave("output/query_4.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+tmp <- query_5 %>%
+    mutate_all(as.numeric) %>%
+    mutate(year = 2021-year) %>%
+    filter(year < 100) %>%
+    transform(year = as.character(year)) %>%
+    arrange(-num) %>%
+    head(8) %>%
+    ggplot(aes(x = "", y = num, fill = year)) +
+    geom_bar(stat="identity", width=1, color="white") +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    geom_text(aes(label = scales::percent(num / sum(num))),
+            position = position_stack(vjust = 0.5)) + 
+    scale_fill_brewer(palette = "Dark2")
+
+
+tmp
+ggsave("output/query_5.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+tmp <- query_6 %>%
+   mutate(numero_corse = as.numeric(numero_corse)) %>% 
+   arrange(-numero_corse) %>%
+   head(10) %>%
+   ggplot(aes(x = reorder(autista, -numero_corse), y = numero_corse, fill = -numero_corse)) +
+   geom_bar(stat = "identity", colour = "black") +
+   theme(legend.position = "none") +
+   labs(
+        x = "Autista",
+        y = "Numero corse",
+        title = "Numero di corse per autista"
+   ) +
+   scale_fill_continuous(low = "#323232", high = "#0077b6") +
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+tmp
+ggsave("output/query_6.png", tmp, dpi = 1000)
+```
+
+
+```{r}
+# Disconnect from the database
+dbDisconnect(con)
 ```
