@@ -17,6 +17,9 @@ db <- "postgres"
 db_user <- "postgres"
 db_password <- "postgres"
 db_schema <- "SistemaTrasportoUrbano"
+
+
+dpi = 500
 ```
 
 ```{r}
@@ -56,7 +59,8 @@ query_1 <- query(con, "SELECT Card, COUNT(*) AS num
                        GROUP BY Card")
 
 # 2 Stampa numero di corse per anno
-query_2 <- query(con, "SELECT EXTRACT(YEAR from DataOra) AS Anno, COUNT(*) AS num
+query_2 <- query(con, "SELECT EXTRACT(YEAR from DataOra) AS Anno,
+                              COUNT(*) AS num
                        FROM Corsa INNER JOIN HaEseguito
                             ON EseguitoId = Id
                        GROUP By Anno")
@@ -107,12 +111,12 @@ tmp <- query_1 %>%
     labs(
          x = "Numero di abbonamenti rinnovati",
          y = "Occorrenze",
-         title = "Abbonamenti rinnovati"
+         title = "Numero di volte in cui un abbonamento viene rinnovato"
     ) +
     scale_fill_continuous(low = "#511845", high = "#ff5733")
 
 tmp
-ggsave("output/query_1.png", tmp, dpi = 1000)
+ggsave("output/query_1.png", tmp, dpi = dpi)
 ```
 
 
@@ -129,12 +133,12 @@ tmp <- query_2 %>%
     labs(
          x = "Anno",
          y = "Numero corse",
-         title = "Numero di corse per anno"
+         title = "Numero di corse per anno (top 10)"
     ) +
     scale_fill_continuous(low = "#e18400", high = "#ffff00")
 
 tmp
-ggsave("output/query_2.png", tmp, dpi = 1000)
+ggsave("output/query_2.png", tmp, dpi = dpi)
 ```
 
 
@@ -153,12 +157,12 @@ tmp <- query_3 %>%
     labs(
          x = "Provincia",
          y = "Occorrenze",
-         title = "Provincie di appartenenza dei clienti"
+         title = "Provincie di appartenenza dei clienti (top 10)"
     ) +
     scale_fill_continuous(low = "#00909e", high = "#c8faff")
 
 tmp
-ggsave("output/query_3.png", tmp, dpi = 1000)
+ggsave("output/query_3.png", tmp, dpi = dpi)
 ```
 
 
@@ -179,50 +183,148 @@ tmp <- query_4 %>%
 
 
 tmp
-ggsave("output/query_4.png", tmp, dpi = 1000)
+ggsave("output/query_4.png", tmp, dpi = dpi)
 ```
 
 
 ```{r}
 tmp <- query_5 %>%
     mutate_all(as.numeric) %>%
-    mutate(year = 2021-year) %>%
+    mutate(year = 2021 - year) %>%
     filter(year < 100) %>%
     transform(year = as.character(year)) %>%
     arrange(-num) %>%
     head(8) %>%
     ggplot(aes(x = "", y = num, fill = year)) +
-    geom_bar(stat="identity", width=1, color="white") +
+    geom_bar(stat = "identity", width = 1, color = "white") +
     coord_polar("y", start = 0) +
     theme_void() +
+    labs(title = "Età dei clienti (top 8)", fill = "Anno") +
     geom_text(aes(label = scales::percent(num / sum(num))),
-            position = position_stack(vjust = 0.5)) + 
+            position = position_stack(vjust = 0.5)) +
     scale_fill_brewer(palette = "Dark2")
 
 
 tmp
-ggsave("output/query_5.png", tmp, dpi = 1000)
+ggsave("output/query_5.png", tmp, dpi = dpi)
 ```
 
 
 ```{r}
 tmp <- query_6 %>%
-   mutate(numero_corse = as.numeric(numero_corse)) %>% 
+   mutate(numero_corse = as.numeric(numero_corse)) %>%
    arrange(-numero_corse) %>%
    head(10) %>%
-   ggplot(aes(x = reorder(autista, -numero_corse), y = numero_corse, fill = -numero_corse)) +
+   ggplot(aes(x = reorder(autista, -numero_corse),
+              y = numero_corse, fill = -numero_corse)) +
    geom_bar(stat = "identity", colour = "black") +
    theme(legend.position = "none") +
    labs(
         x = "Autista",
         y = "Numero corse",
-        title = "Numero di corse per autista"
+        title = "Numero di corse per autista (top 10)"
    ) +
    scale_fill_continuous(low = "#323232", high = "#0077b6") +
    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
 tmp
-ggsave("output/query_6.png", tmp, dpi = 1000)
+ggsave("output/query_6.png", tmp, dpi = dpi)
+```
+
+
+```{r}
+get_times <- function(con, query) {
+    repetitions <- 30
+    times <- tibble(plan_time = numeric(), exec_time = numeric())
+    for (i in seq(1, repetitions)) {
+        res <- query(con, query)
+
+        res <- res %>% tail(2)
+        times <- times %>%
+            rbind(c(as.numeric(str_match(res[1, ], "Planning Time: (.*) ms")[, 2]),
+                    as.numeric(str_match(res[2, ], "Execution Time: (.*) ms")[, 2])))
+    }
+    colnames(times) <- c("plan_time", "exec_time")
+    times
+}
+
+times1 <- get_times(con, "EXPLAIN ANALYZE
+                          SELECT COUNT(*)
+                          FROM Valido")
+
+times2 <- get_times(con, "EXPLAIN ANALYZE
+                          SELECT COUNT(*) 
+                          FROM Abbonamento 
+                          WHERE 
+                            (tipoabbonamento = 'trimestrale' AND datainizio + INTERVAL '84d' >= NOW()) 
+                            OR (tipoabbonamento = 'mensile' AND datainizio + INTERVAL '28d' >= NOW()) 
+                            OR (tipoabbonamento = 'annuale' AND datainizio + INTERVAL '365d' >= NOW())")
+final_plan <- union(
+    times1 %>%
+    summarise(mean = mean(plan_time),
+              sd = sd(plan_time)) %>%
+    mutate(category = "Con Valido"),
+    times2 %>%
+    summarise(mean = mean(plan_time),
+              sd = sd(plan_time)) %>%
+    mutate(category = "Senza Valido")
+)
+
+final_exec <- union(
+    times1 %>%
+    summarise(mean = mean(exec_time),
+              sd = sd(exec_time)) %>%
+    mutate(category = "Con Valido"),
+    times2 %>%
+    summarise(mean = mean(exec_time),
+              sd = sd(exec_time)) %>%
+    mutate(category = "Senza Valido")
+)
+
+tmp <- final_plan %>%
+    ggplot(aes(x = category, fill = category)) +
+    geom_boxplot(
+                 aes(lower = mean - sd,
+                     upper = mean + sd,
+                     middle = mean,
+                     ymin = mean - 3 * sd,
+                     ymax = mean + 3 * sd),
+                 stat = "identity") +
+    theme(legend.position = "none") +
+    labs(x = "",
+         y = "Tempo (ms)",
+         title = "Tempo di pianificazione")
+
+ggsave("output/valido_plan.png", tmp, dpi = dpi)
+
+tmp <- final_exec %>%
+    ggplot(aes(x = category, fill = category)) +
+    geom_boxplot(
+                 aes(lower = mean - sd,
+                     upper = mean + sd,
+                     middle = mean,
+                     ymin = mean - 3 * sd,
+                     ymax = mean + 3 * sd),
+                 stat = "identity") +
+    theme(legend.position = "none") +
+    labs(x = "",
+         y = "Tempo (ms)",
+         title = "Tempo di esecuzione")
+
+ggsave("output/valido_exec.png", tmp, dpi = dpi)
+```
+
+
+```{r}
+query(con, "SET enable_seqscan = OFF")
+# Still doesn't uses the given index!
+query(con, "EXPLAIN ANALYZE
+            SELECT COUNT(*)
+            FROM Corsa INNER JOIN HaEseguito 
+                 ON EseguitoId = Id 
+            WHERE date_trunc('month', DataOra)
+                    = date_trunc('month', NOW());")
+
 ```
 
 

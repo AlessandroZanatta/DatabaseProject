@@ -15,7 +15,7 @@ CREATE DOMAIN NumeroLineaTrasporto      AS VARCHAR(4); -- Might also be somethin
 CREATE DOMAIN TargaAutobus              AS VARCHAR(10);
 CREATE DOMAIN NumeroTessera             AS VARCHAR(32);
 CREATE DOMAIN CodiceFiscale             AS VARCHAR(16) 
-    CHECK( VALUE ~ '^[A-Z]{6}[0-9]{2}[A-Z]{1}[0-9]{2}[A-Z]{1}[0-9]{3}[A-Z]{1}$' ); -- ValiDATE fiscal code
+    CHECK( VALUE ~ '^[A-Z]{6}[0-9]{2}[A-Z]{1}[0-9]{2}[A-Z]{1}[0-9]{3}[A-Z]{1}$' ); -- Validate fiscal code
 CREATE DOMAIN Nome                      AS VARCHAR(256);
 CREATE DOMAIN Cognome                   AS VARCHAR(256);
 CREATE DOMAIN LuogoResidenza            AS VARCHAR(256);
@@ -53,9 +53,10 @@ CREATE TABLE Composto (
         ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE,
     NumeroLinea   NumeroLineaTrasporto REFERENCES LineaTrasportoUrbano(Numero)
         ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE,
-    Posizione     INTEGER NOT NULL,
+    Posizione     INTEGER NOT NULL CHECK(Posizione > 0),
 
-    PRIMARY KEY (NumeroLinea,NomeFermata)
+    PRIMARY KEY (NumeroLinea,NomeFermata),
+    UNIQUE (NomeFermata, NumeroLinea, Posizione)
 );
 
 CREATE TABLE Autobus (

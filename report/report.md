@@ -16,7 +16,17 @@ geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
 
 # Introduzione
 
+Lo scopo del progetto è la progettazione e implementazione di una base di dati, a partire dall'analisi dei requisiti fino ad arrivare all'analisi dei dati.
 
+La struttura del progetto è la seguente:
+    
+ - `database/` - implementazione e analisi del database
+    - `analysis/` - analisi in R
+        - `analysis.Rmd`
+    - `Dockerfile` - `docker-compose.yml` - dockerfiles per il database
+    - `scripts/` - script per il popolamento del database
+    - `sql/` - file di implementazione del database
+    - `Makefile` - utilizzato per semplificare l'uso del database
 
 \newpage
 
@@ -219,7 +229,7 @@ Si evidenziano i seguenti ***vincoli aziendali***:
 Si indicano inoltre le seguenti ***regole di derivazione***:
 
 - L'attributo `numero di fermate` dell'entità `linea di trasporto urbana` è derivabile contando il numero di istanze di `fermata` in relazione con una data istanza di `linea di trasporto urbana`. 
-- L'attributo `numero di corse mensili` dell'entità `cliente` è derivabile contando il numero di istanze di `corsa` in un dato mese in relazione con una data istanza di `cliente`
+- L'attributo `numero di corse mensili` dell'entità `cliente` è derivabile contando il numero di istanze di `corsa` in un dato mese in relazione con una data istanza di `cliente`.
 
 ### Considerazioni
 
@@ -234,12 +244,12 @@ Nello schema sono presenti dei cicli. Dato che i cicli potrebbero essere, potenz
 Si riportano alcune decisioni progettuali attinenti alle cardinalità delle relazioni:
 
 - Il vincolo di partecipazione opzionale è stato utilizzato, nella relazione ternaria `ha eseguito`, sia per autobus che per autista in quanto:
-    - Un autobus potrebbe, se esso è nuovo o di riserva, non aver effettuato alcuna corsa
-    - Un autista potrebbe, nel caso in cui questo fosse neo-assunto, non aver eseguito alcuna corsa
+    - Un autobus potrebbe, se esso è nuovo o di riserva, non aver effettuato alcuna corsa.
+    - Un autista potrebbe, nel caso in cui questo fosse neo-assunto, non aver eseguito alcuna corsa.
 - Per considerazioni analoghe a quelle precedenti, la partecipazione di `autobus` alla relazione `servita da` è opzionale. Un autobus potrebbe, infatti, non servire alcuna `linea di trasporto urbano`.
 - La partecipazione nella relazione `ha usufruito` è, da ambo i lati, opzionale in quanto:
-    - Una `corsa` potrebbe non avere alcun `cliente` tra i passeggeri del mezzo
-    - Un `cliente` potrebbe, se appena tesserato, non aver usufruito di alcuna `corsa`
+    - Una `corsa` potrebbe non avere alcun `cliente` tra i passeggeri del mezzo.
+    - Un `cliente` potrebbe, se appena tesserato, non aver usufruito di alcuna `corsa`.
 
 \newpage
 
@@ -355,7 +365,7 @@ Segue l'analisi di vantaggi e svantaggi dell'attributo derivato `numero di ferma
 \end{table}
 
 
-Gli accessi, in lettura e scrittura, all'entità `linea di trasporto urbano`, richiesto in caso di ridondanza, è necessario per garantire che l'attributo derivato e ridondante `numero di fermate` sia aggiornato correttamente.
+Gli accessi, in lettura e scrittura, all'entità `linea di trasporto urbano`, richiesto in caso di ridondanza, sono necessari per garantire che l'attributo derivato e ridondante `numero di fermate` sia aggiornato correttamente.
 
 I seguenti calcoli sono effettuati dando un peso doppio agli accessi in scrittura dato che questi risultano essere più dispendiosi.
 
@@ -460,7 +470,7 @@ L'unica generalizzazione presente nello schema E-R è quella che riguarda le ent
 Gli attributi composti sono stati eliminati nel seguente modo:
 
  - Per quanto riguarda l'attributo `indirizzo` relativo a `fermata`, è stato scelto di eliminare gli attributi figli in quanto si è maggiormente interessati all'indirizzo nella sua interezza;
- - Considerando l'attributo `DataOra` dell'entità `ha eseguito`, si è deciso di mantenere l'attributo genitore, in quanto si prevede di accedervi nella sua interezza;
+ - Considerando l'attributo `dataora` dell'entità `ha eseguito`, si è deciso di mantenere l'attributo genitore, in quanto si prevede di accedervi nella sua interezza;
  - In merito all'attributo `n. posti` dell'entità `autobus`, infine, è stato scomposto l'attributo dato che questo sarebbe risultato difficilmente rappresentabile unitamente.
 
 #### Partizionamento di entità {-}
@@ -469,8 +479,7 @@ Dato che non è stato ritenuto necessario alcun partizionamento, lo schema E-R n
 
 #### Eliminazione di attributi multivalore {-}
 
-L'unico attributo multivalore presente è quello relativo ai recapiti telefonici relativo all'entità `autista`.
-Si è provveduto a partizionarlo in due entità, `autista` e `telefono`, legate da una relazione uno a molti (opzionale dal lato dell'`autista`).
+L'unico attributo multivalore presente riguarda i `recapiti telefonici` relativi all'entità `autista`. Si è provveduto a partizionarlo in due entità, `autista` e `telefono`, legate da una relazione uno a molti (opzionale dal lato dell'`autista`).
 
 #### Accorpamento di entità {-}
 
@@ -524,7 +533,7 @@ Le entità `cliente`, `abbonamento`, `tessera` e `telefono` verrano invece tratt
     - Vincolo NotNull: Nome, Cognome, DataNascita, LuogoDiResidenza, NumeroPatente
     - Vincolo Unique: NumeroPatente
  - **Corsa**(\textit{\underline{DataOra, NumeroLinea}})
-    - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra si riferisce alla colonna `DataOra` di `HaEseguito`\footnote{Questa relazione è definita nella sezione 4.2.2} <!-- TODO mettilo come reference sto 4.2.2. -->
+    - Vincolo di chiave esterna: NumeroLinea si riferisce alla chiave primaria di `LineaTrasportoUrbano`, DataOra si riferisce alla colonna `DataOra` di `HaEseguito`\footnote{Questa relazione è definita nella sezione 4.2.2}
 
 #### Traduzioni che subiranno modifiche {-}
 
@@ -556,7 +565,7 @@ Questi tipi di relazioni vengono sempre tradotte introducendo una nuova relazion
  - **HaUsufruito**(\textit{\underline{Cliente, DataOra, NumeroLinea}})
     - Vincolo di chiave esterna: Cliente fa riferimento alla colonna `CodiceFiscale` della tabella `Cliente`, DataOra fa riferimento alla colonna `DataOra` della tabella `Corsa`, NumeroLinea fa riferimento alla colonna `NumeroLinea` della tabella `Corsa`
 
-Alcuni vincoli, come riportato sopra, non sono esprimibili in quanto la relazione di sottoinsieme dato da una chiave esterna non è sufficiente a garantire la partecipazione obbligatoria di una data entità ad una certa relazione in caso di relazione molti a molti.
+Alcuni vincoli, come riportato sopra, non sono esprimibili in quanto la relazione di sottoinsieme, data da una chiave esterna, non è sufficiente a garantire la partecipazione obbligatoria di una data entità ad una certa relazione in caso di relazione molti a molti.
 Vengono, quindi, esplicitati alcuni vincoli aggiuntivi che verranno gestiti tramite appositi trigger:
 
  - Vincolo di partecipazione obbligatoria fra l'entità `fermata` e la relazione `composto`;
@@ -606,7 +615,7 @@ Valido            & Relazione          & 7500             & Lettura       \\ \hl
 \end{table}
 
 Si può quindi notare come il numero di accessi, utilizzando la seconda soluzione, sia inferiore di più di un ordine di grandezza.
-Le tabelle sono quindi definite nel seguente modo: \footnote{Si analizzeranno gli effetti di questa decisione in seguito, in particolare durante la fase di progettazione fisica e di analisi dei dati.} <!-- TODO fallo eh -->
+Le tabelle sono quindi definite nel seguente modo: \footnote{Si analizzeranno gli effetti di questa decisione in seguito, in particolare durante la fase di analisi dei dati.}
 
  - **Valido**(\textit{\underline{Tessera, DataInizio}})
     - Vincoli di chiave esterna: Tessera fa riferimento alla chiave primaria della tabella `Tessera`, DataInizio fa riferimento alla colonna `DataInizio` di `Abbonamento`
@@ -639,9 +648,9 @@ Si riporta di seguito una visualizzazione dello schema.
 
 Per la fase di progettazione fisica si sono analizzate le [operazioni frequenti definite precedentemente](#operazioni-frequenti).
 
-Riguardo l'operazione `lettura del numero di corse mensili effettuate`, la creazione di un indice sull'attributo `DataOra` di `Corsa` potrebbe rendere la query più efficiente in quanto reperire le corse di interesse per l'interrogazione potrebbe risultare più efficiente.
+Riguardo l'operazione `lettura del numero di corse mensili effettuate`, la creazione di un indice sull'attributo `DataOra` di `Corsa` potrebbe rendere  il reperimento delle corse di interesse per l'interrogazione più efficiente.
 
-Considerando le restanti interrogazioni, non si ritiene sia necessario aggiungere ulteriori indici. Si noti, per esempio, che la query `stampa del numero di fermate per una data linea di trasporto urbana` non beneficerebbe in alcun modo di un indice grazie all'attributo ridondante `NumeroFermate`
+Considerando le restanti interrogazioni, non si ritiene sia necessario aggiungere ulteriori indici. Si noti, per esempio, che la query `stampa del numero di fermate per una data linea di trasporto urbana` non beneficerebbe in alcun modo di un indice grazie all'attributo ridondante `NumeroFermate`.
 
 Si noti che si utilizzeranno alcuni [strumenti](https://www.postgresql.org/docs/8.2/indexes-examine.html) offerti dal DBMS postgres per analizzare l'efficacia dell'indice definito. Questo verrà effettuato una volta popolato il database completamente.
 
@@ -649,10 +658,39 @@ Si noti che si utilizzeranno alcuni [strumenti](https://www.postgresql.org/docs/
 
 # Implementazione
 
-<!-- TODO Abbiamo aggiunto un ID in HaEseguito durante l'implementazione al fine di evitare di dover portarci dietro 3 attributi (quelli che costituivano la chiave di HaEseguito) -->
+Il codice relativo all'implementazione è disponibile nella cartella `database/sql`.
+
+Si noti che si sono sostituiti i 3 attributi che erano chiave esterna in `Corsa` con un singolo ID, proveniente da `HaEseguito`. Ciò è stato fatto al fine di evitare di avere troppi attributi come chiavi esterne di `Corsa`. 
+
+Non è disponibile, inoltre, il codice per il popolamento del database, il quale viene generato in automatico dallo script python (che può essere trovato in `scripts/populate.py`).
+
+Infine, per mantenere le relazioni `valido` e `scaduto` coerenti, si è utilizzato il tool [pgcron](https://github.com/citusdata/pg_cron) per effettuare gli spostamenti necessari ad intervalli di tempo regolari.
 
 \newpage
 
 # Analisi dei dati
 
+## Query
 
+![](../database/analysis/output/query_1.png)
+![](../database/analysis/output/query_2.png)
+![](../database/analysis/output/query_3.png)
+![](../database/analysis/output/query_4.png)
+![](../database/analysis/output/query_5.png)
+![](../database/analysis/output/query_6.png)
+
+\newpage
+
+## Performance
+
+Si è analizzata la performance della scelta progettuale effettuata nella [sezione 4.2.3](#relazioni-uno-a-molti). Si riportano di seguito i relativi grafici:
+
+\begin{center}
+\includegraphics[width=0.9\textwidth,height=\textheight]{../database/analysis/output/valido_plan.png}
+\end{center}
+
+\begin{center}
+\includegraphics[width=0.9\textwidth,height=\textheight]{../database/analysis/output/valido_exec.png}
+\end{center}
+
+Si è inoltre tentato di analizzare l'efficacia dell'indice definito nella [sezione 5](#progettazione-fisica). Questo non è stato possibile in quanto [PostgreSQL non permette di forzare l'utilizzo di un indice](https://wiki.postgresql.org/wiki/OptimizerHintsDiscussion)  ma permette solamente di indicargli l'uso se lo ritiene opportuno (tramite opzioni come `SET enable_seqscan = OFF` o altre descritte a [questa](https://www.2ndquadrant.com/en/blog/hinting_at_postgresql/)).
